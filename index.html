@@ -735,6 +735,494 @@
   }
 }
         </style>
-</body>
-</html>
+    </head>
+    <body>
+        <!-- Your existing landing page content here -->
+    
+        <!-- Chatbot HTML -->
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <div class="chatbot-mode-toggle">
+                    <div class="toggle-track">
+                        <button class="mode-btn active" data-mode="academic">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3V5M4 9H20M5.5 8.5L7 19H17L18.5 8.5M9 14H15M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>Academic</span>
+                        </button>
+                        <button class="mode-btn" data-mode="mental">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 10H7.01M17 10H17.01M7 14H7.01M17 14H17.01M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>Mental</span>
+                        </button>
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <button class="close-chatbot">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="chatbot-messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <div class="welcome-message academic">
+                            <div class="welcome-animation">
+                                <div class="particle" style="--delay: 0s; --x: -10px; --y: -5px;"></div>
+                                <div class="particle" style="--delay: 0.2s; --x: 10px; --y: -10px;"></div>
+                                <div class="particle" style="--delay: 0.4s; --x: 0px; --y: 5px;"></div>
+                            </div>
+                            <h3>Academic Assistant Ready!</h3>
+                            <p>I can help analyze student performance, behavior patterns, and provide personalized recommendations.</p>
+                        </div>
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+            
+            <div class="chatbot-input">
+                <input type="text" placeholder="Type your message..." class="message-input">
+                <button class="send-button">
+                    
+                    <h2>&#8594;</h2>
+                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Floating Toggle Button -->
+        <button class="chatbot-toggle">
+            <div class="toggle-icon">
+                <svg class="icon-academic" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3V5M4 9H20M5.5 8.5L7 19H17L18.5 8.5M9 14H15M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <svg class="icon-mental" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 10H7.01M17 10H17.01M7 14H7.01M17 14H17.01M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="ripple-effect"></div>
+        </button>
+         <script>
+           class EnhancedMultiModeChatbot {
+  constructor() {
+    // Enhanced Configuration
+    this.config = {
+      apiKey: 'AIzaSyBnJ_vu93ErDrojrOk0M-wfQLQkTgc9oco', // Your Gemini API key
+      academicModel: 'gemini-1.5-pro',
+      mentalModel: 'gemini-1.5-flash',
+      currentMode: 'academic',
+      temperature: 0.7,
+      maxTokens: 1000,
+      historyLength: 4,
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_ONLY_HIGH"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_ONLY_HIGH"
+        }
+      ],
+      academicInstruction: {
+        role: "model",
+        parts: [{
+          text: "You are Path AI, an expert in student performance prediction. Provide concise, data-driven answers about:\n" +
+                "- Learning analytics\n- Early warning systems\n- Behavior patterns\n" +
+                "- Personalized recommendations\nKeep responses professional yet approachable. " +
+                "Format responses with clear headings, bullet points when appropriate, " +
+                "and highlight key statistics in bold."
+        }]
+      },
+      mentalInstruction: {
+        role: "model",
+        parts: [{
+          text: "You are a compassionate mental health supporter. Provide empathetic, non-judgmental responses.\n" +
+                "- Focus on active listening\n- Offer coping strategies\n- Suggest breathing exercises\n" +
+                "- Never diagnose\n- Recommend professional help when needed\n" +
+                "Keep responses warm and supportive. Use gentle language and emojis occasionally " +
+                "to make the conversation more comforting (but don't overuse them)."
+        }]
+      }
+    };
+
+    // State management
+    this.isOpen = false;
+    this.isLoading = false;
+    this.conversationHistory = [];
+    this.apiError = false;
+    this.init();
+  }
+
+  // Initialize chatbot
+  init() {
+    this.cacheElements();
+    this.setupEventListeners();
+    this.setupInitialMessage();
+    this.createRippleEffect();
+  }
+
+  // Cache DOM elements
+  cacheElements() {
+    this.elements = {
+      container: document.querySelector('.chatbot-container'),
+      toggle: document.querySelector('.chatbot-toggle'),
+      closeBtn: document.querySelector('.close-chatbot'),
+      messages: document.querySelector('.chatbot-messages'),
+      input: document.querySelector('.message-input'),
+      sendBtn: document.querySelector('.send-button'),
+      modeBtns: document.querySelectorAll('.mode-btn'),
+      toggleTrack: document.querySelector('.toggle-track'),
+      toggleSlider: document.querySelector('.toggle-slider'),
+      academicIcon: document.querySelector('.icon-academic'),
+      mentalIcon: document.querySelector('.icon-mental')
+    };
+  }
+
+  // Create ripple effect for toggle button
+  createRippleEffect() {
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple-effect';
+    this.elements.toggle.appendChild(ripple);
+    
+    // Restart animation every 1.5 seconds
+    setInterval(() => {
+      ripple.style.animation = 'none';
+      void ripple.offsetWidth; // Trigger reflow
+      ripple.style.animation = 'ripple 1.5s ease-out infinite';
+    }, 1500);
+  }
+
+  // Event listeners
+  setupEventListeners() {
+    // Toggle chat visibility - fixed implementation
+    this.elements.toggle.addEventListener('click', () => {
+      this.toggleChat();
+    });
+    
+    this.elements.closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeChat();
+    });
+    
+    // Send message on button click or Enter key
+    this.elements.sendBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.sendMessage();
+    });
+    
+    this.elements.input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.stopPropagation();
+        this.sendMessage();
+      }
+    });
+    
+    // Mode switch buttons
+    this.elements.modeBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.switchMode(btn.dataset.mode);
+      });
+    });
+  }
+
+  // Switch between modes with beautiful animation
+  switchMode(mode) {
+    if (this.config.currentMode === mode || this.isLoading) return;
+    
+    // Create mode switch animation overlay
+    const animationOverlay = document.createElement('div');
+    animationOverlay.className = 'mode-switch-animation';
+    this.elements.container.appendChild(animationOverlay);
+    
+    // Remove animation after it completes
+    setTimeout(() => {
+      animationOverlay.remove();
+    }, 600);
+    
+    // Update UI immediately
+    this.config.currentMode = mode;
+    this.elements.toggle.classList.toggle('mental-mode', mode === 'mental');
+    this.elements.toggleTrack.classList.toggle('mental-mode', mode === 'mental');
+    
+    // Update conversation history
+    this.conversationHistory = [];
+    this.elements.messages.innerHTML = '';
+    this.setupInitialMessage();
+    
+    // Animate the toggle slider
+    this.elements.toggleSlider.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    
+    // Change send button color
+    this.elements.sendBtn.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    
+    // Add slight bounce effect to the toggle
+    this.elements.toggleTrack.style.transform = 'scale(1.05)';
+    setTimeout(() => {
+      this.elements.toggleTrack.style.transform = 'scale(1)';
+    }, 300);
+  }
+
+  // Toggle chat visibility - fixed implementation
+  toggleChat() {
+    this.isOpen = !this.isOpen;
+    this.elements.container.classList.toggle('active', this.isOpen);
+    
+    if (this.isOpen) {
+      this.elements.input.focus();
+      
+      // Add slight bounce effect when opening
+      this.elements.container.style.transform = 'translateY(10px) scale(0.98)';
+      setTimeout(() => {
+        this.elements.container.style.transform = 'translateY(0) scale(1)';
+      }, 100);
+    } else {
+      // Add slight bounce effect when closing
+      this.elements.container.style.transform = 'translateY(5px) scale(0.99)';
+      setTimeout(() => {
+        this.elements.container.style.transform = 'translateY(30px) scale(0.95)';
+      }, 100);
+    }
+  }
+
+  closeChat() {
+    this.isOpen = false;
+    this.elements.container.classList.remove('active');
+    
+    // Add slight bounce effect when closing
+    this.elements.container.style.transform = 'translateY(5px) scale(0.99)';
+    setTimeout(() => {
+      this.elements.container.style.transform = 'translateY(30px) scale(0.95)';
+    }, 100);
+  }
+
+  // Send message to the chatbot
+  async sendMessage() {
+    const message = this.elements.input.value.trim();
+    if (!message || this.isLoading) return;
+
+    // Add user message with animation
+    this.addMessage(message, 'user');
+    this.elements.input.value = '';
+    
+    // Show typing indicator
+    const typingId = this.showTyping();
+    this.isLoading = true;
+    this.apiError = false;
+    
+    try {
+      // Get AI response
+      const response = await this.getAIResponse(message);
+      
+      // Only add response if we haven't switched modes
+      if (this.config.currentMode === (typingId.includes('academic') ? 'academic' : 'mental')) {
+        this.addMessage(response, 'bot');
+        this.updateConversationHistory(message, response);
+      }
+    } catch (error) {
+      console.error("Chatbot Error:", error);
+      this.apiError = true;
+      
+      // Only show error if we haven't switched modes
+      if (this.config.currentMode === (typingId.includes('academic') ? 'academic' : 'mental')) {
+        this.addMessage(this.getFallbackResponse(), 'bot');
+      }
+    } finally {
+      this.hideTyping(typingId);
+      this.isLoading = false;
+    }
+  }
+
+  // Get response from Gemini API
+  async getAIResponse(message) {
+    const model = this.config.currentMode === 'academic' 
+      ? this.config.academicModel 
+      : this.config.mentalModel;
+    
+    const instruction = this.config.currentMode === 'academic'
+      ? this.config.academicInstruction
+      : this.config.mentalInstruction;
+
+    // Prepare conversation history
+    const contents = this.conversationHistory.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }]
+    }));
+    
+    // Add current message
+    contents.push({
+      role: 'user',
+      parts: [{ text: message }]
+    });
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.config.apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          systemInstruction: instruction,
+          safetySettings: this.config.safetySettings,
+          generationConfig: {
+            temperature: this.config.temperature,
+            maxOutputTokens: this.config.maxTokens
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'API request failed');
+    }
+
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+  }
+
+  // Get appropriate fallback response
+  getFallbackResponse() {
+    if (this.config.currentMode === 'academic') {
+      return "🔍 I'm having trouble accessing academic data right now. " +
+             "Based on typical patterns:\n\n" +
+             "• **Attendance correlation**: Students with >90% attendance score 15-20% higher on average\n" +
+             "• **Engagement tip**: Weekly 1-on-1 check-ins improve performance by ~30%\n\n" +
+             "Try asking again in a moment for more specific insights.";
+    } else {
+      return "💙 I'm having technical difficulties but I'm here for you. " +
+             "Remember:\n\n" +
+             "• Take 3 deep breaths (inhale 4s, hold 4s, exhale 6s)\n" +
+             "• This moment will pass - you've gotten through tough times before\n" +
+             "• Consider reaching out to a trusted friend or counselor\n\n" +
+             "Try asking again soon for more personalized support.";
+    }
+  }
+
+  // Update conversation history
+  updateConversationHistory(userMessage, botResponse) {
+    this.conversationHistory.push(
+      { role: 'user', content: userMessage },
+      { role: 'assistant', content: botResponse }
+    );
+    
+    // Limit history length
+    if (this.conversationHistory.length > this.config.historyLength * 2) {
+      this.conversationHistory = this.conversationHistory.slice(-this.config.historyLength * 2);
+    }
+  }
+
+  // UI Helpers
+  addMessage(text, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    messageDiv.innerHTML = `
+      <div class="message-content">${this.formatResponse(text)}</div>
+      <div class="message-time">${this.getCurrentTime()}</div>
+    `;
+    this.elements.messages.appendChild(messageDiv);
+    this.scrollToBottom();
+  }
+
+  formatResponse(text) {
+    // Enhanced formatting
+    return text
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+      .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italics
+      .replace(/^\s*-\s(.+)/gm, '<li>$1</li>') // Lists
+      .replace(/^\s*\d+\.\s(.+)/gm, '<li>$1</li>')
+      .replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>') // Links
+      .replace(/💙|🔍|✨/g, '<span class="emoji">$&</span>'); // Emoji styling
+  }
+
+  getCurrentTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  showTyping() {
+    const typingId = `typing-${this.config.currentMode}-${Date.now()}`;
+    const typingDiv = document.createElement('div');
+    typingDiv.id = typingId;
+    typingDiv.className = 'message bot-message typing-indicator';
+    typingDiv.innerHTML = `
+      <div class="message-content">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    `;
+    this.elements.messages.appendChild(typingDiv);
+    this.scrollToBottom();
+    return typingId;
+  }
+
+  hideTyping(id) {
+    const typingElement = document.getElementById(id);
+    if (typingElement) {
+      typingElement.remove();
+    }
+  }
+
+  scrollToBottom() {
+    this.elements.messages.scrollTo({
+      top: this.elements.messages.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+
+  // Initial setup
+  setupInitialMessage() {
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message bot-message';
+    
+    if (this.config.currentMode === 'academic') {
+      welcomeDiv.innerHTML = `
+        <div class="message-content">
+          <div class="welcome-message academic">
+            <div class="welcome-animation">
+              <div class="particle" style="--delay: 0s; --x: -10px; --y: -5px;"></div>
+              <div class="particle" style="--delay: 0.2s; --x: 10px; --y: -10px;"></div>
+              <div class="particle" style="--delay: 0.4s; --x: 0px; --y: 5px;"></div>
+            </div>
+            <h3>Academic Assistant Ready!</h3>
+            <p>I can help analyze student performance, behavior patterns, and provide personalized recommendations.</p>
+          </div>
+        </div>
+        <div class="message-time">${this.getCurrentTime()}</div>
+      `;
+    } else {
+      welcomeDiv.innerHTML = `
+        <div class="message-content">
+          <div class="welcome-message mental">
+            <div class="welcome-animation">
+              <div class="particle" style="--delay: 0s; --x: -10px; --y: -5px; background: rgba(255,107,107,0.2);"></div>
+              <div class="particle" style="--delay: 0.2s; --x: 10px; --y: -10px; background: rgba(255,107,107,0.2);"></div>
+              <div class="particle" style="--delay: 0.4s; --x: 0px; --y: 5px; background: rgba(255,107,107,0.2);"></div>
+            </div>
+            <h3 style="color: var(--mental);">Mental Health Support Here</h3>
+            <p>I'm here to listen and offer support. Remember, I'm not a replacement for professional help.</p>
+          </div>
+        </div>
+        <div class="message-time">${this.getCurrentTime()}</div>
+      `;
+    }
+    
+    this.elements.messages.appendChild(welcomeDiv);
+    this.scrollToBottom();
+  }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  window.chatbot = new EnhancedMultiModeChatbot();
+});
+        </script>
+    </body>
+    </html>
     
