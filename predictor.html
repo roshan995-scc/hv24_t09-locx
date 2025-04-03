@@ -1,0 +1,4022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path AI Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Emilys+Candy&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #224abe;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        .risk-high {
+            background-color: #f8d7da;
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .risk-medium {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .risk-low {
+            background-color: #d4edda;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .badge-grade-A {
+            background-color: var(--success-color);
+        }
+        
+        .badge-grade-B {
+            background-color: var(--info-color);
+        }
+        
+        .badge-grade-C {
+            background-color: var(--warning-color);
+            color: #212529;
+        }
+        
+        .badge-grade-D {
+            background-color: #fd7e14;
+        }
+        
+        .badge-grade-F {
+            background-color: var(--danger-color);
+        }
+        
+        .summary-card {
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+        
+        .summary-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .summary-card.total {
+            border-left-color: var(--primary-color);
+        }
+        
+        .summary-card.avg {
+            border-left-color: var(--info-color);
+        }
+        
+        .summary-card.risk {
+            border-left-color: var(--danger-color);
+        }
+        
+        .summary-card.attendance {
+            border-left-color: var(--warning-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                padding-top: 20px;
+            }
+            
+            .card {
+                margin-bottom: 15px;
+            }
+            
+            .summary-card {
+                margin-bottom: 15px;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+        
+        /* Loading spinner */
+        .spinner-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* File upload styling */
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-upload-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            font-family: 'Arial', sans-serif;
+            perspective: 1000px;
+        }
+        
+        .logo-main {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4e73df;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo-main span {
+            display: inline-block;
+            position: relative;
+        }
+        
+        .logo-sub {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out 1.5s forwards;
+        }
+        
+        .path-ai {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .path-ai::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: #224abe;
+            animation: drawLine 1s ease-out 0.5s forwards;
+        }
+        
+        .predictor {
+            display: inline-block;
+            transform-style: preserve-3d;
+            transform-origin: bottom;
+            animation: flipIn 1s ease-out 1s forwards;
+            opacity: 0;
+        }
+        
+        .ai-icon {
+            display: inline-block;
+            margin-left: 10px;
+            animation: pulse 2s infinite 2s;
+        }
+        
+        @keyframes drawLine {
+            to {
+                width: 100%;
+            }
+        }
+        
+        @keyframes flipIn {
+            0% {
+                transform: rotateX(90deg);
+                opacity: 0;
+            }
+            100% {
+                transform: rotateX(0deg);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Brain wave animation */
+        .brain-wave {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="%234e73df" opacity=".25"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" fill="%234e73df" opacity=".5"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%234e73df"/></svg>');
+            background-repeat: repeat-x;
+            background-position: 0 bottom;
+            background-size: 50% 20px;
+            animation: wave 3s linear infinite;
+            opacity: 0;
+            animation-delay: 1.8s;
+        }
+        
+        @keyframes wave {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%);
+                opacity: 1;
+            }
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+        
+        /* Custom tooltip */
+        .custom-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .custom-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .custom-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Enhanced buttons */
+        .btn-enhanced {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .btn-enhanced:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn-enhanced:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Smooth transitions */
+        .smooth-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Enhanced form controls */
+        .form-control-enhanced:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        /* Custom checkbox */
+        .form-check-enhanced .form-check-input {
+            width: 1.2em;
+            height: 1.2em;
+            margin-top: 0.1em;
+        }
+        
+        .form-check-enhanced .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Responsive tables */
+        @media (max-width: 992px) {
+            .table-responsive-md {
+                overflow-x: auto;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .sidebar, .btn, .dropdown-menu, .no-print {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #dee2e6 !important;
+            }
+        }
+
+        /* AI Assistant Chat */
+        .ai-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 350px;
+            max-width: 90%;
+        }
+        
+        .ai-assistant .card {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ai-assistant .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ai-assistant .card-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .ai-assistant .message {
+            margin-bottom: 10px;
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 15px;
+        }
+        
+        .ai-assistant .user-message {
+            background-color: var(--light-color);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-assistant .ai-message {
+            background-color: var(--primary-color);
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .ai-assistant .input-group {
+            margin-top: auto;
+        }
+        
+        .ai-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
+        
+        .ai-toggle i {
+            font-size: 24px;
+        }
+        
+        /* Subject performance indicators */
+        .subject-performance {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .subject-card {
+            flex: 1 1 150px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .subject-card h6 {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .subject-card .progress {
+            height: 8px;
+            margin-bottom: 5px;
+        }
+        
+        /* AI prediction highlights */
+        .prediction-highlight {
+            background-color: rgba(78, 115, 223, 0.1);
+            border-left: 4px solid var(--primary-color);
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+            margin: 10px 0;
+        }
+        
+        .prediction-highlight.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left-color: var(--warning-color);
+        }
+        
+        .prediction-highlight.danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left-color: var(--danger-color);
+        }
+        
+        .prediction-highlight.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-left-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="spinner-container" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- AI Assistant Toggle -->
+    <div class="ai-toggle" id="aiToggle">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- AI Assistant Chat -->
+    <div class="ai-assistant" id="aiAssistant" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-robot me-2"></i>AI Assistant
+                <button type="button" class="btn-close btn-close-white ms-auto" id="closeAssistant"></button>
+            </div>
+            <div class="card-body" id="aiChatBody">
+                <div class="ai-message message">
+                    <strong>Path AI:</strong> Hello! I'm your AI assistant. How can I help you with student performance analysis today?
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="aiMessageInput" placeholder="Ask me anything...">
+                    <button class="btn btn-primary" id="sendAiMessage">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4 p-3">
+                        <h4 class="text-white">Path AI Predictor</h4>
+                        <p class="text-white-50 small">Student Performance Analytics</p>
+                    </div>
+                    <ul class="nav flex-column px-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                                <i class="fas fa-tachometer-alt"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#students" data-bs-toggle="tab">
+                                <i class="fas fa-users"></i>Students
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#departments" data-bs-toggle="tab">
+                                <i class="fas fa-building"></i>Departments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#predictions" data-bs-toggle="tab">
+                                <i class="fas fa-chart-line"></i>Predictions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                                <i class="fas fa-cog"></i>Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4 main-content">
+                <div class="tab-content">
+                    <!-- Dashboard Tab -->
+                    <div class="tab-pane fade show active" id="dashboard">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Student Performance Dashboard</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group me-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="exportDashboard">
+                                        <i class="fas fa-file-export me-1"></i>Export
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" id="printDashboard">
+                                        <i class="fas fa-print me-1"></i>Print
+                                    </button>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" id="timeRangeDropdown" data-bs-toggle="dropdown">
+                                    <i class="fas fa-calendar-alt me-1"></i> This semester
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" data-range="current">Current Semester</a></li>
+                                    <li><a class="dropdown-item" href="#" data-range="last">Last Semester</a></li>
+                                    <li><a class="dropdown-item" href="#" data-range="year">Academic Year</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" data-range="custom">Custom Range</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="row mb-4">
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card summary-card total h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    Total Students</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-students">0</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card summary-card avg h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                    Average Grade</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="avg-grade">-</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card summary-card risk h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                    At Risk Students</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="at-risk">0</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card summary-card attendance h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Avg Attendance</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="avg-attendance">0%</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Insights Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card shadow">
+                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                        <h6 class="m-0 font-weight-bold text-primary">AI Insights</h6>
+                                        <button class="btn btn-sm btn-primary" id="refreshInsights">
+                                            <i class="fas fa-sync-alt me-1"></i> Refresh
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="aiInsights">
+                                        <div class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Generating AI insights...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="row">
+                            <div class="col-lg-8 mb-4">
+                                <div class="card shadow h-100">
+                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                        <h6 class="m-0 font-weight-bold text-primary">Performance Overview</h6>
+                                        <div class="dropdown no-arrow">
+                                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow animated--fade-in"
+                                                aria-labelledby="dropdownMenuLink">
+                                                <li><a class="dropdown-item" href="#" id="exportPerformanceChart">Export Chart</a></li>
+                                                <li><a class="dropdown-item" href="#" id="togglePerformanceChart">Toggle Data</a></li>
+                                                <li><div class="dropdown-divider"></div></li>
+                                                <li><a class="dropdown-item" href="#" id="refreshPerformanceChart">Refresh Data</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-area">
+                                            <canvas id="performanceChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 mb-4">
+                                <div class="card shadow h-100">
+                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                        <h6 class="m-0 font-weight-bold text-primary">Grade Distribution</h6>
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="chart-pie pt-4 pb-2">
+                                            <canvas id="gradePieChart"></canvas>
+                                        </div>
+                                        <div class="mt-auto text-center small">
+                                            <span class="me-2">
+                                                <i class="fas fa-circle text-success"></i> A
+                                            </span>
+                                            <span class="me-2">
+                                                <i class="fas fa-circle text-info"></i> B
+                                            </span>
+                                            <span class="me-2">
+                                                <i class="fas fa-circle text-warning"></i> C
+                                            </span>
+                                            <span class="me-2">
+                                                <i class="fas fa-circle text-danger"></i> D/F
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Students -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 font-weight-bold text-primary">Students at Risk</h6>
+                                        <button class="btn btn-sm btn-primary" id="emailAtRisk">
+                                            <i class="fas fa-envelope me-1"></i> Email All
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="riskStudentsTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Student ID</th>
+                                                        <th>Name</th>
+                                                        <th>Department</th>
+                                                        <th>Risk Score</th>
+                                                        <th>Current Grade</th>
+                                                        <th>Attendance</th>
+                                                        <th>Behavior</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="risk-students-body">
+                                                    <!-- Filled by JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Students Tab -->
+                    <div class="tab-pane fade" id="students">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Student Records</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group me-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="exportStudents">
+                                        <i class="fas fa-file-export me-1"></i>Export
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" id="printStudents">
+                                        <i class="fas fa-print me-1"></i>Print
+                                    </button>
+                                </div>
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                                    <i class="fas fa-plus me-1"></i> Add Student
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-2">
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-enhanced" placeholder="Search students..." id="studentSearch">
+                                    <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <select class="form-select form-control-enhanced" id="departmentFilter">
+                                    <option value="">All Departments</option>
+                                    <option value="CSE">CSE</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="EE">EE</option>
+                                    <option value="IT">IT</option>
+                                    <option value="AIML">AIML</option>
+                                    <option value="CE">CE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <select class="form-select form-control-enhanced" id="gradeFilter">
+                                    <option value="">All Grades</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="F">F</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Theory Avg</th>
+                                        <th>Practical Avg</th>
+                                        <th>Attendance</th>
+                                        <th>Behavior</th>
+                                        <th>Grade</th>
+                                        <th>Risk</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="students-table-body">
+                                    <!-- Filled by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <nav aria-label="Page navigation" class="mt-3">
+                            <ul class="pagination justify-content-center" id="pagination">
+                                <!-- Filled by JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <!-- Departments Tab -->
+                    <div class="tab-pane fade" id="departments">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Department Analysis</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <button class="btn btn-sm btn-outline-secondary" id="exportDeptData">
+                                    <i class="fas fa-file-export me-1"></i>Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-lg-6 mb-4">
+                                <div class="card shadow h-100">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">Department Performance</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-bar">
+                                            <canvas id="departmentBarChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 mb-4">
+                                <div class="card shadow h-100">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">Department Risk Comparison</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-bar">
+                                            <canvas id="riskBarChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                        <h6 class="m-0 font-weight-bold text-primary">Department Statistics</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Department</th>
+                                                        <th>Students</th>
+                                                        <th>Avg Theory</th>
+                                                        <th>Avg Practical</th>
+                                                        <th>Avg Attendance</th>
+                                                        <th>Avg Behavior</th>
+                                                        <th>% At Risk</th>
+                                                        <th>Top Grade</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="department-stats-body">
+                                                    <!-- Filled by JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Tab -->
+                    <div class="tab-pane fade" id="predictions">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Performance Predictions</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <button class="btn btn-sm btn-primary btn-enhanced" id="runPredictions">
+                                    <i class="fas fa-calculator me-1"></i> Run Predictions
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="card shadow h-100">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">Prediction Model</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Our AI-powered predictive model analyzes multiple factors to identify students at risk of poor performance or dropout:</p>
+                                        <ul>
+                                            <li>Theory and practical exam scores (CA max: 25, PCA max: 40)</li>
+                                            <li>Attendance percentage</li>
+                                            <li>Behavior rating</li>
+                                            <li>Assignment completion</li>
+                                            <li>Historical trends</li>
+                                            <li>Semester-wise performance patterns</li>
+                                        </ul>
+                                        <div class="alert alert-info">
+                                            <strong>Model Accuracy:</strong> <span id="modelAccuracy">92.5%</span> based on historical data
+                                        </div>
+                                        <div class="alert alert-warning">
+                                            <strong>Note:</strong> Number of CAs and PCAs varies by semester. The model automatically adjusts calculations.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card shadow h-100">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">Key Risk Factors</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Low Theory Scores (CA &lt; 12.5)</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width: 85%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Poor Attendance (&lt; 70%)</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 72%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Behavior Issues (&lt; 5/10)</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: 48%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Incomplete Assignments (&lt; 5/10)</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 62%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Low Practical Scores (PCA &lt; 20)</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 55%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 font-weight-bold text-primary">Prediction Results</h6>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="predictionFilter" data-bs-toggle="dropdown">
+                                                Filter by Risk
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-risk="all">All Students</a></li>
+                                                <li><a class="dropdown-item" href="#" data-risk="high">High Risk Only</a></li>
+                                                <li><a class="dropdown-item" href="#" data-risk="medium">Medium Risk</a></li>
+                                                <li><a class="dropdown-item" href="#" data-risk="low">Low Risk</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Student ID</th>
+                                                        <th>Name</th>
+                                                        <th>Department</th>
+                                                        <th>Current Grade</th>
+                                                        <th>Predicted Grade</th>
+                                                        <th>Dropout Risk</th>
+                                                        <th>Confidence</th>
+                                                        <th>Recommended Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="prediction-results-body">
+                                                    <!-- Filled by JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-pane fade" id="settings">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Settings</h1>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">System Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="systemSettingsForm">
+                                            <div class="mb-3">
+                                                <label class="form-label">Risk Threshold</label>
+                                                <input type="range" class="form-range" min="0" max="1" step="0.05" id="riskThreshold" value="0.5">
+                                                <div class="text-muted">Current threshold: <span id="thresholdValue">0.5</span></div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Data Refresh Frequency</label>
+                                                <select class="form-select form-control-enhanced" id="refreshFrequency">
+                                                    <option value="1">Daily</option>
+                                                    <option value="7" selected>Weekly</option>
+                                                    <option value="30">Monthly</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3 form-check form-check-enhanced">
+                                                <input type="checkbox" class="form-check-input" id="emailAlerts" checked>
+                                                <label class="form-check-label" for="emailAlerts">Enable email alerts for high-risk students</label>
+                                            </div>
+                                            <div class="mb-3 form-check form-check-enhanced">
+                                                <input type="checkbox" class="form-check-input" id="autoPredictions" checked>
+                                                <label class="form-check-label" for="autoPredictions">Run automatic predictions weekly</label>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-enhanced">Save Settings</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">Data Import</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="formFile" class="form-label">Upload Student Data</label>
+                                            <div class="file-upload btn btn-outline-primary w-100">
+                                                <span id="fileName">Choose CSV file...</span>
+                                                <input class="form-control file-upload-input" type="file" id="formFile" accept=".csv">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Data Format</label>
+                                            <select class="form-select form-control-enhanced" id="dataFormat">
+                                                <option value="semester1">Semester 1 (3 CAs, 3 PCAs)</option>
+                                                <option value="semester2">Semester 2 (4 CAs, 4 PCAs)</option>
+                                                <option value="semester3">Semester 3 (6 CAs, 3 PCAs)</option>
+                                                <option value="semester4">Semester 4 (6 CAs, 3 PCAs)</option>
+                                                <option value="semester5">Semester 5 (7 CAs, 3 PCAs)</option>
+                                                <option value="semester6">Semester 6 (7 CAs, 3 PCAs)</option>
+                                                <option value="semester7">Semester 7 (6 CAs, 0 PCAs)</option>
+                                                <option value="semester8">Semester 8 (4 CAs, 0 PCAs)</option>
+                                            </select>
+                                        </div>
+                                        <div class="alert alert-warning">
+                                            <strong>Note:</strong> Uploaded files should be in CSV format matching the expected schema.
+                                            <a href="#" id="downloadTemplate">Download template</a>
+                                        </div>
+                                        <button class="btn btn-success btn-enhanced" id="importData">
+                                            <i class="fas fa-file-import me-1"></i> Import Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStudentModalLabel">Add New Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addStudentForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="studentId" class="form-label">Student ID</label>
+                                <input type="text" class="form-control form-control-enhanced" id="studentId" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select form-control-enhanced" id="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="CSE">CSE</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="EE">EE</option>
+                                    <option value="IT">IT</option>
+                                    <option value="AIML">AIML</option>
+                                    <option value="CE">CE</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="semester" class="form-label">Semester</label>
+                                <select class="form-select form-control-enhanced" id="semester" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1">Semester 1</option>
+                                    <option value="2">Semester 2</option>
+                                    <option value="3">Semester 3</option>
+                                    <option value="4">Semester 4</option>
+                                    <option value="5">Semester 5</option>
+                                    <option value="6">Semester 6</option>
+                                    <option value="7">Semester 7</option>
+                                    <option value="8">Semester 8</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="studentName" class="form-label">Student Name</label>
+                                <input type="text" class="form-control form-control-enhanced" id="studentName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6>Theory Scores (CA - Max 25 each)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="theoryScoresContainer">
+                                    <!-- Dynamic fields based on semester -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6>Practical Scores (PCA - Max 40 each)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="practicalScoresContainer">
+                                    <!-- Dynamic fields based on semester -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="attendance" class="form-label">Attendance (%)</label>
+                                <input type="number" class="form-control form-control-enhanced" id="attendance" min="0" max="100" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="behavior" class="form-label">Behavior Rating (1-10)</label>
+                                <input type="number" class="form-control form-control-enhanced" id="behavior" min="1" max="10" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="assignments" class="form-label">Assignments (0-10)</label>
+                                <input type="number" class="form-control form-control-enhanced" id="assignments" min="0" max="10" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-enhanced" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-enhanced" id="saveStudent">Save Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editStudentForm">
+                        <input type="hidden" id="editStudentId">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Student ID</label>
+                                <input type="text" class="form-control form-control-enhanced" id="editId" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editDepartment" class="form-label">Department</label>
+                                <select class="form-select form-control-enhanced" id="editDepartment" required>
+                                    <option value="">Select Department</option>
+                                    <option value="CSE">CSE</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="EE">EE</option>
+                                    <option value="IT">IT</option>
+                                    <option value="AIML">AIML</option>
+                                    <option value="CE">CE</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editSemester" class="form-label">Semester</label>
+                                <select class="form-select form-control-enhanced" id="editSemester" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1">Semester 1</option>
+                                    <option value="2">Semester 2</option>
+                                    <option value="3">Semester 3</option>
+                                    <option value="4">Semester 4</option>
+                                    <option value="5">Semester 5</option>
+                                    <option value="6">Semester 6</option>
+                                    <option value="7">Semester 7</option>
+                                    <option value="8">Semester 8</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editName" class="form-label">Student Name</label>
+                                <input type="text" class="form-control form-control-enhanced" id="editName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6>Theory Scores (CA - Max 25 each)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="editTheoryScoresContainer">
+                                    <!-- Dynamic fields based on semester -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6>Practical Scores (PCA - Max 40 each)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="editPracticalScoresContainer">
+                                    <!-- Dynamic fields based on semester -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="editAttendance" class="form-label">Attendance (%)</label>
+                                <input type="number" class="form-control form-control-enhanced" id="editAttendance" min="0" max="100" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editBehavior" class="form-label">Behavior Rating (1-10)</label>
+                                <input type="number" class="form-control form-control-enhanced" id="editBehavior" min="1" max="10" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editAssignments" class="form-label">Assignments (0-10)</label>
+                                <input type="number" class="form-control form-control-enhanced" id="editAssignments" min="0" max="10" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-enhanced" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-enhanced" id="updateStudent">Update Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div class="modal fade" id="studentDetailModal" tabindex="-1" aria-labelledby="studentDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentDetailModalLabel">Student Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-4 h-100">
+                                <div class="card-header">
+                                    <h6>Basic Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <img src="https://ui-avatars.com/api/?name=Student&background=4e73df&color=ffffff&size=150" 
+                                             class="rounded-circle img-thumbnail" alt="Student" id="studentAvatar">
+                                    </div>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Student ID</th>
+                                            <td id="detail-id">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <td id="detail-name">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Department</th>
+                                            <td id="detail-dept">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Semester</th>
+                                            <td id="detail-semester">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Current Grade</th>
+                                            <td><span class="badge" id="detail-grade">-</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Risk Score</th>
+                                            <td id="detail-risk">-</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card mb-4 h-100">
+                                <div class="card-header">
+                                    <h6>Performance Metrics</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Theory Scores (CA)</h6>
+                                                    <canvas id="theoryRadarChart" height="200"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Practical Scores (PCA)</h6>
+                                                    <canvas id="practicalRadarChart" height="200"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card bg-light h-100">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Attendance</h6>
+                                                    <div class="display-4" id="detail-attendance">-</div>
+                                                    <div class="progress mt-2">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card bg-light h-100">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Behavior</h6>
+                                                    <div class="display-4" id="detail-behavior">-</div>
+                                                    <div class="progress mt-2">
+                                                        <div class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card bg-light h-100">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Assignments</h6>
+                                                    <div class="display-4" id="detail-assignments">-</div>
+                                                    <div class="progress mt-2">
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Performance Prediction</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert" id="predictionAlert">
+                                        <strong>Prediction:</strong> No prediction available yet.
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Intervention Recommendations</label>
+                                        <ul class="list-group" id="recommendationsList">
+                                            <li class="list-group-item">No recommendations yet</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Notes</label>
+                                        <textarea class="form-control form-control-enhanced" rows="3" id="studentNotes" placeholder="Add notes about this student..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-enhanced" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-enhanced" id="saveNotes">Save Notes</button>
+                    <button type="button" class="btn btn-success btn-enhanced" id="generateReport">Generate Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Enhanced student data structure with semester-wise configuration
+        const studentData = [];
+        const semesters = {
+            1: { theoryCount: 3, practicalCount: 3, theoryMax: 25, practicalMax: 40 },
+            2: { theoryCount: 4, practicalCount: 4, theoryMax: 25, practicalMax: 40 },
+            3: { theoryCount: 6, practicalCount: 3, theoryMax: 25, practicalMax: 40 },
+            4: { theoryCount: 6, practicalCount: 3, theoryMax: 25, practicalMax: 40 },
+            5: { theoryCount: 7, practicalCount: 3, theoryMax: 25, practicalMax: 40 },
+            6: { theoryCount: 7, practicalCount: 3, theoryMax: 25, practicalMax: 40 },
+            7: { theoryCount: 6, practicalCount: 0, theoryMax: 25, practicalMax: 0 },
+            8: { theoryCount: 4, practicalCount: 0, theoryMax: 25, practicalMax: 0 }
+        };
+        
+        // Current page for pagination
+        let currentPage = 1;
+        const studentsPerPage = 10;
+        
+        // AI Chat messages
+        const aiChatMessages = [
+            {
+                sender: 'ai',
+                content: 'Hello! I\'m your AI assistant. How can I help you with student performance analysis today?'
+            }
+        ];
+        
+        // Generate sample data for demo
+        function generateSampleData() {
+            const departments = ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'];
+            const firstNames = ['John', 'Jane', 'Robert', 'Emily', 'Michael', 'Sarah', 'David', 'Lisa'];
+            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson'];
+            
+            for (let i = 1; i <= 200; i++) {
+                const dept = departments[Math.floor(Math.random() * departments.length)];
+                const semester = Math.floor(Math.random() * 8) + 1;
+                const theoryCount = semesters[semester].theoryCount;
+                const practicalCount = semesters[semester].practicalCount;
+                
+                // Generate theory (CA) scores (max 25)
+                const theoryScores = [];
+                let theorySum = 0;
+                for (let j = 0; j < theoryCount; j++) {
+                    const score = Math.floor(Math.random() * 26);
+                    theoryScores.push(score);
+                    theorySum += score;
+                }
+                const theoryAvg = Math.round(theorySum / theoryCount);
+                
+                // Generate practical (PCA) scores (max 40)
+                const practicalScores = [];
+                let practicalSum = 0;
+                for (let j = 0; j < practicalCount; j++) {
+                    const score = Math.floor(Math.random() * 41);
+                    practicalScores.push(score);
+                    practicalSum += score;
+                }
+                const practicalAvg = practicalCount > 0 ? Math.round(practicalSum / practicalCount) : 0;
+                
+                // Other metrics
+                const attendance = Math.floor(Math.random() * 40) + 50; // 50-90%
+                const behavior = Math.floor(Math.random() * 10) + 1; // 1-10
+                const assignments = Math.floor(Math.random() * 11); // 0-10
+                
+                // Calculate performance score with AI-enhanced weighting
+                const performanceScore = calculatePerformanceScore(
+                    theoryAvg, 
+                    practicalAvg, 
+                    attendance, 
+                    behavior, 
+                    assignments,
+                    semester
+                );
+                
+                // Determine grade
+                let grade = calculateGrade(performanceScore);
+                
+                // Calculate risk
+                const risk = (1 - performanceScore).toFixed(2);
+                
+                // Generate name
+                const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                const name = `${firstName} ${lastName}`;
+                
+                studentData.push({
+                    id: i,
+                    name: name,
+                    department: dept,
+                    semester: semester,
+                    theoryScores: theoryScores,
+                    practicalScores: practicalScores,
+                    theoryAvg: theoryAvg,
+                    practicalAvg: practicalAvg,
+                    attendance: attendance,
+                    behavior: behavior,
+                    assignments: assignments,
+                    risk: risk,
+                    grade: grade,
+                    notes: '',
+                    lastUpdated: new Date().toISOString(),
+                    prediction: null,
+                    aiRecommendations: []
+                });
+            }
+        }
+        
+        // AI-enhanced performance score calculation
+        function calculatePerformanceScore(theoryAvg, practicalAvg, attendance, behavior, assignments, semester) {
+            // Base weights
+            let theoryWeight = 0.4;
+            let practicalWeight = 0.3;
+            let attendanceWeight = 0.15;
+            let behaviorWeight = 0.1;
+            let assignmentsWeight = 0.05;
+            
+            // Adjust weights based on semester
+            if (semester >= 7) {
+                // Higher semesters - more weight on theory
+                theoryWeight = 0.5;
+                practicalWeight = 0.2;
+            } else if (semester <= 2) {
+                // Lower semesters - more balanced
+                theoryWeight = 0.35;
+                practicalWeight = 0.35;
+            }
+            
+            // Calculate normalized scores
+            const theoryScore = theoryAvg / 25;
+            const practicalScore = practicalAvg / 40;
+            const attendanceScore = attendance / 100;
+            const behaviorScore = behavior / 10;
+            const assignmentsScore = assignments / 10;
+            
+            // Calculate performance score with adjusted weights
+            return (theoryScore * theoryWeight) + 
+                   (practicalScore * practicalWeight) + 
+                   (attendanceScore * attendanceWeight) + 
+                   (behaviorScore * behaviorWeight) + 
+                   (assignmentsScore * assignmentsWeight);
+        }
+        
+        // Calculate grade based on performance score
+        function calculateGrade(performanceScore) {
+            if (performanceScore > 0.85) return 'A';
+            if (performanceScore > 0.7) return 'B';
+            if (performanceScore > 0.55) return 'C';
+            if (performanceScore > 0.4) return 'D';
+            return 'F';
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast show align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate sample data
+            generateSampleData();
+            
+            // Initialize charts
+            initCharts();
+            
+            // Populate tables
+            populateStudentTables();
+            populateDepartmentStats();
+            populatePredictionResults();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Update summary cards
+            updateSummaryCards();
+            
+            // Initialize semester fields in add student modal
+            document.getElementById('semester').addEventListener('change', updateSemesterFields);
+            document.getElementById('editSemester').addEventListener('change', updateEditSemesterFields);
+            
+            // Initialize AI chat
+            updateAiChat();
+            
+            // Generate AI insights
+            generateAiInsights();
+            
+            // Show welcome toast
+            setTimeout(() => {
+                showToast('Welcome to Path AI Predictor! Dashboard is ready.', 'primary');
+            }, 1000);
+        });
+        
+        // Initialize charts
+        function initCharts() {
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            window.performanceChart = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+                    datasets: [{
+                        label: 'Theory Average (CA)',
+                        data: [15, 16, 14, 18, 17, 19, 20],
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        tension: 0.3,
+                        borderWidth: 2
+                    }, {
+                        label: 'Practical Average (PCA)',
+                        data: [25, 28, 26, 30, 29, 32, 34],
+                        borderColor: '#1cc88a',
+                        backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                        tension: 0.3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label.includes('Theory')) {
+                                        label += context.raw + '/25';
+                                    } else {
+                                        label += context.raw + '/40';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 40,
+                            ticks: {
+                                callback: function(value) {
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Grade Pie Chart
+            const gradePieCtx = document.getElementById('gradePieChart').getContext('2d');
+            window.gradePieChart = new Chart(gradePieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['A', 'B', 'C', 'D', 'F'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0], // Will be updated
+                        backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#fd7e14', '#dc3545'],
+                        hoverBackgroundColor: ['#218838', '#138496', '#e0a800', '#d66a0a', '#c82333'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                        borderWidth: 1
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%',
+                },
+            });
+
+            // Department Bar Chart
+            const deptBarCtx = document.getElementById('departmentBarChart').getContext('2d');
+            window.deptBarChart = new Chart(deptBarCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'],
+                    datasets: [{
+                        label: 'Theory Average (CA)',
+                        data: [0, 0, 0, 0, 0, 0], // Will be updated
+                        backgroundColor: '#4e73df',
+                        borderColor: '#4e73df',
+                        borderWidth: 1
+                    }, {
+                        label: 'Practical Average (PCA)',
+                        data: [0, 0, 0, 0, 0, 0], // Will be updated
+                        backgroundColor: '#1cc88a',
+                        borderColor: '#1cc88a',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 40,
+                            ticks: {
+                                callback: function(value) {
+                                    return value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label.includes('Theory')) {
+                                        label += context.raw + '/25';
+                                    } else {
+                                        label += context.raw + '/40';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Risk Bar Chart
+            const riskBarCtx = document.getElementById('riskBarChart').getContext('2d');
+            window.riskBarChart = new Chart(riskBarCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'],
+                    datasets: [{
+                        label: '% At Risk',
+                        data: [0, 0, 0, 0, 0, 0], // Will be updated
+                        backgroundColor: '#e74a3b',
+                        borderColor: '#e74a3b',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw + '% at risk';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update semester fields in add student modal
+        function updateSemesterFields() {
+            const semester = document.getElementById('semester').value;
+            const theoryContainer = document.getElementById('theoryScoresContainer');
+            const practicalContainer = document.getElementById('practicalScoresContainer');
+            
+            theoryContainer.innerHTML = '';
+            practicalContainer.innerHTML = '';
+            
+            if (!semester) return;
+            
+            const semesterConfig = semesters[semester];
+            const theoryCount = semesterConfig.theoryCount;
+            const practicalCount = semesterConfig.practicalCount;
+            
+            // Add theory (CA) fields
+            for (let i = 1; i <= theoryCount; i++) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-2';
+                col.innerHTML = `
+                    <label for="theory${i}" class="form-label">CA ${i} (Max 25)</label>
+                    <input type="number" class="form-control form-control-enhanced" id="theory${i}" min="0" max="25" required>
+                `;
+                theoryContainer.appendChild(col);
+            }
+            
+            // Add practical (PCA) fields if they exist for this semester
+            if (practicalCount > 0) {
+                for (let i = 1; i <= practicalCount; i++) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 mb-2';
+                    col.innerHTML = `
+                        <label for="practical${i}" class="form-label">PCA ${i} (Max 40)</label>
+                        <input type="number" class="form-control form-control-enhanced" id="practical${i}" min="0" max="40" required>
+                    `;
+                    practicalContainer.appendChild(col);
+                }
+            } else {
+                practicalContainer.innerHTML = '<div class="col-12 text-muted">No practical subjects this semester</div>';
+            }
+        }
+        
+        // Update semester fields in edit student modal
+        function updateEditSemesterFields() {
+            const semester = document.getElementById('editSemester').value;
+            const theoryContainer = document.getElementById('editTheoryScoresContainer');
+            const practicalContainer = document.getElementById('editPracticalScoresContainer');
+            
+            theoryContainer.innerHTML = '';
+            practicalContainer.innerHTML = '';
+            
+            if (!semester) return;
+            
+            const semesterConfig = semesters[semester];
+            const theoryCount = semesterConfig.theoryCount;
+            const practicalCount = semesterConfig.practicalCount;
+            
+            // Add theory (CA) fields
+            for (let i = 1; i <= theoryCount; i++) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-2';
+                col.innerHTML = `
+                    <label for="editTheory${i}" class="form-label">CA ${i} (Max 25)</label>
+                    <input type="number" class="form-control form-control-enhanced" id="editTheory${i}" min="0" max="25" required>
+                `;
+                theoryContainer.appendChild(col);
+            }
+            
+            // Add practical (PCA) fields if they exist for this semester
+            if (practicalCount > 0) {
+                for (let i = 1; i <= practicalCount; i++) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 mb-2';
+                    col.innerHTML = `
+                        <label for="editPractical${i}" class="form-label">PCA ${i} (Max 40)</label>
+                        <input type="number" class="form-control form-control-enhanced" id="editPractical${i}" min="0" max="40" required>
+                    `;
+                    practicalContainer.appendChild(col);
+                }
+            } else {
+                practicalContainer.innerHTML = '<div class="col-12 text-muted">No practical subjects this semester</div>';
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // File upload display
+            document.getElementById('formFile').addEventListener('change', function(e) {
+                const fileName = e.target.files[0] ? e.target.files[0].name : 'Choose CSV file...';
+                document.getElementById('fileName').textContent = fileName;
+            });
+            
+            // Risk threshold slider
+            document.getElementById('riskThreshold').addEventListener('input', function() {
+                document.getElementById('thresholdValue').textContent = this.value;
+            });
+            
+            // Run predictions button
+            document.getElementById('runPredictions').addEventListener('click', function() {
+                showLoading();
+                setTimeout(() => {
+                    runPredictions();
+                    hideLoading();
+                    showToast('Predictions have been successfully run for all students.', 'success');
+                }, 1500);
+            });
+            
+            // Save student button
+            document.getElementById('saveStudent').addEventListener('click', addNewStudent);
+            
+            // Update student button
+            document.getElementById('updateStudent').addEventListener('click', updateStudent);
+            
+            // Save notes button
+            document.getElementById('saveNotes').addEventListener('click', saveStudentNotes);
+            
+            // Generate report button
+            document.getElementById('generateReport').addEventListener('click', generateStudentReport);
+            
+            // Filter event listeners
+            document.getElementById('departmentFilter').addEventListener('change', filterStudents);
+            document.getElementById('gradeFilter').addEventListener('change', filterStudents);
+            document.getElementById('studentSearch').addEventListener('keyup', filterStudents);
+            document.getElementById('searchButton').addEventListener('click', filterStudents);
+            
+            // Prediction filter
+            document.querySelectorAll('[data-risk]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    filterPredictions(this.getAttribute('data-risk'));
+                });
+            });
+            
+            // Export buttons
+            document.getElementById('exportDashboard').addEventListener('click', exportDashboard);
+            document.getElementById('exportStudents').addEventListener('click', exportStudents);
+            document.getElementById('exportDeptData').addEventListener('click', exportDepartmentData);
+            
+            // Print buttons
+            document.getElementById('printDashboard').addEventListener('click', printDashboard);
+            document.getElementById('printStudents').addEventListener('click', printStudents);
+            
+            // Email at risk students
+            document.getElementById('emailAtRisk').addEventListener('click', emailAtRiskStudents);
+            
+            // Download template
+            document.getElementById('downloadTemplate').addEventListener('click', downloadTemplate);
+            
+            // Import data
+            document.getElementById('importData').addEventListener('click', importStudentData);
+            
+            // System settings form
+            document.getElementById('systemSettingsForm').addEventListener('submit', saveSystemSettings);
+            
+            // Time range dropdown
+            document.querySelectorAll('[data-range]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const range = this.getAttribute('data-range');
+                    document.getElementById('timeRangeDropdown').innerHTML = 
+                        `<i class="fas fa-calendar-alt me-1"></i> ${this.textContent}`;
+                    showToast(`Time range changed to: ${this.textContent}`, 'info');
+                });
+            });
+            
+            // Chart export buttons
+            document.getElementById('exportPerformanceChart').addEventListener('click', function(e) {
+                e.preventDefault();
+                showToast('Performance chart exported successfully', 'info');
+            });
+            
+            document.getElementById('togglePerformanceChart').addEventListener('click', function(e) {
+                e.preventDefault();
+                const chart = window.performanceChart;
+                chart.options.plugins.legend.display = !chart.options.plugins.legend.display;
+                chart.update();
+                showToast('Chart legend toggled', 'info');
+            });
+            
+            document.getElementById('refreshPerformanceChart').addEventListener('click', function(e) {
+                e.preventDefault();
+                showLoading();
+                setTimeout(() => {
+                    window.performanceChart.update();
+                    hideLoading();
+                    showToast('Performance chart data refreshed', 'success');
+                }, 1000);
+            });
+            
+            // AI Assistant toggle
+            document.getElementById('aiToggle').addEventListener('click', function() {
+                const assistant = document.getElementById('aiAssistant');
+                if (assistant.style.display === 'none') {
+                    assistant.style.display = 'block';
+                } else {
+                    assistant.style.display = 'none';
+                }
+            });
+            
+            // Close AI Assistant
+            document.getElementById('closeAssistant').addEventListener('click', function() {
+                document.getElementById('aiAssistant').style.display = 'none';
+            });
+            
+            // Send AI message
+            document.getElementById('sendAiMessage').addEventListener('click', sendAiMessage);
+            document.getElementById('aiMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendAiMessage();
+                }
+            });
+            
+            // Refresh insights
+            document.getElementById('refreshInsights').addEventListener('click', generateAiInsights);
+        }
+        
+        // Update AI chat display
+        function updateAiChat() {
+            const chatBody = document.getElementById('aiChatBody');
+            chatBody.innerHTML = '';
+            
+            aiChatMessages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `${msg.sender}-message message`;
+                
+                if (msg.sender === 'ai') {
+                    messageDiv.innerHTML = `<strong>Path AI:</strong> ${msg.content}`;
+                } else {
+                    messageDiv.innerHTML = `<strong>You:</strong> ${msg.content}`;
+                }
+                
+                chatBody.appendChild(messageDiv);
+            });
+            
+            // Scroll to bottom
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        // Send message to AI assistant
+        function sendAiMessage() {
+            const input = document.getElementById('aiMessageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            aiChatMessages.push({
+                sender: 'user',
+                content: message
+            });
+            
+            // Clear input
+            input.value = '';
+            
+            // Update chat
+            updateAiChat();
+            
+            // Show typing indicator
+            const chatBody = document.getElementById('aiChatBody');
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'ai-message message';
+            typingIndicator.innerHTML = '<strong>Path AI:</strong> <i class="fas fa-ellipsis-h"></i>';
+            chatBody.appendChild(typingIndicator);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            
+            // Simulate AI response after delay
+            setTimeout(() => {
+                // Remove typing indicator
+                chatBody.removeChild(typingIndicator);
+                
+                // Generate AI response
+                const response = generateAiResponse(message);
+                
+                // Add AI response
+                aiChatMessages.push({
+                    sender: 'ai',
+                    content: response
+                });
+                
+                // Update chat
+                updateAiChat();
+            }, 1500);
+        }
+        
+        // Generate AI response (simulated - in a real app this would call an API)
+        function generateAiResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('help') || lowerMessage.includes('assistance')) {
+                return "I can help you analyze student performance, identify at-risk students, and suggest interventions. What specific information would you like?";
+            }
+            
+            if (lowerMessage.includes('risk') || lowerMessage.includes('at risk')) {
+                const riskCount = studentData.filter(s => s.risk > 0.5).length;
+                return `There are currently ${riskCount} students identified as at-risk (risk score > 0.5). You can view them in the "Students at Risk" section of the dashboard. Would you like me to analyze specific risk factors?`;
+            }
+            
+            if (lowerMessage.includes('grade') || lowerMessage.includes('performance')) {
+                const gradeDistribution = calculateGradeDistribution();
+                return `Current grade distribution: A (${gradeDistribution.A}%), B (${gradeDistribution.B}%), C (${gradeDistribution.C}%), D (${gradeDistribution.D}%), F (${gradeDistribution.F}%). Would you like a more detailed breakdown by department?`;
+            }
+            
+            if (lowerMessage.includes('department') || lowerMessage.includes('program')) {
+                return "The departments with the highest average grades are CSE and AIML. EE department has the highest percentage of at-risk students. Would you like specific recommendations for any department?";
+            }
+            
+            if (lowerMessage.includes('recommend') || lowerMessage.includes('suggest')) {
+                return "Based on current data, I recommend focusing on improving attendance and assignment completion rates, as these are the most significant factors affecting performance. For high-risk students, consider personalized tutoring and early intervention programs.";
+            }
+            
+            return "I'm here to help you analyze student performance data. You can ask me about at-risk students, grade distributions, department performance, or recommendations for improvement.";
+        }
+        
+        // Generate AI insights for dashboard
+        function generateAiInsights() {
+            const insightsContainer = document.getElementById('aiInsights');
+            
+            // Show loading
+            insightsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Generating AI insights...</p>
+                </div>
+            `;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Calculate insights
+                const riskCount = studentData.filter(s => s.risk > 0.5).length;
+                const totalStudents = studentData.length;
+                const riskPercentage = Math.round((riskCount / totalStudents) * 100);
+                
+                const gradeDistribution = calculateGradeDistribution();
+                const topDepartment = getTopPerformingDepartment();
+                const bottomDepartment = getBottomPerformingDepartment();
+                
+                // Generate insights HTML
+                insightsContainer.innerHTML = `
+                    <div class="prediction-highlight">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Key Insight</h6>
+                        <p>${riskPercentage}% of students (${riskCount} out of ${totalStudents}) are currently at risk of poor performance or dropout.</p>
+                    </div>
+                    
+                    <div class="prediction-highlight ${riskPercentage > 30 ? 'warning' : 'success'}">
+                        <h6><i class="fas fa-chart-line me-2"></i>Performance Trend</h6>
+                        <p>${riskPercentage > 30 ? 'Warning: The percentage of at-risk students is higher than the institutional target of 20%. Immediate intervention is recommended.' : 'Good news! The percentage of at-risk students is within acceptable limits.'}</p>
+                    </div>
+                    
+                    <div class="prediction-highlight">
+                        <h6><i class="fas fa-graduation-cap me-2"></i>Grade Distribution</h6>
+                        <p>The current grade distribution shows ${gradeDistribution.A}% A grades, ${gradeDistribution.B}% B grades, ${gradeDistribution.C}% C grades, ${gradeDistribution.D}% D grades, and ${gradeDistribution.F}% F grades.</p>
+                    </div>
+                    
+                    <div class="prediction-highlight">
+                        <h6><i class="fas fa-trophy me-2"></i>Top Performing Department</h6>
+                        <p>${topDepartment.name} has the highest average grade (${topDepartment.avgGrade}) and lowest at-risk percentage (${topDepartment.riskPercentage}%).</p>
+                    </div>
+                    
+                    <div class="prediction-highlight ${bottomDepartment.riskPercentage > 30 ? 'danger' : ''}">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Department Needing Attention</h6>
+                        <p>${bottomDepartment.name} has the highest percentage of at-risk students (${bottomDepartment.riskPercentage}%). Consider targeted interventions for this department.</p>
+                    </div>
+                    
+                    <div class="prediction-highlight">
+                        <h6><i class="fas fa-bullseye me-2"></i>Recommended Actions</h6>
+                        <ul>
+                            <li>Focus on improving attendance rates, especially for students with less than 70% attendance</li>
+                            <li>Implement additional tutoring for students scoring below 50% in theory subjects</li>
+                            <li>Consider behavior counseling for students with behavior ratings below 5/10</li>
+                            <li>Monitor assignment completion rates and follow up with students who have incomplete work</li>
+                        </ul>
+                    </div>
+                `;
+            }, 2000);
+        }
+        
+        // Calculate grade distribution percentages
+        function calculateGradeDistribution() {
+            const gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+            
+            studentData.forEach(student => {
+                gradeCounts[student.grade]++;
+            });
+            
+            const total = studentData.length;
+            
+            return {
+                A: Math.round((gradeCounts.A / total) * 100),
+                B: Math.round((gradeCounts.B / total) * 100),
+                C: Math.round((gradeCounts.C / total) * 100),
+                D: Math.round((gradeCounts.D / total) * 100),
+                F: Math.round((gradeCounts.F / total) * 100)
+            };
+        }
+        
+        // Get top performing department
+        function getTopPerformingDepartment() {
+            const departments = ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'];
+            const departmentStats = [];
+            
+            departments.forEach(dept => {
+                const deptStudents = studentData.filter(s => s.department === dept);
+                const count = deptStudents.length;
+                
+                if (count === 0) return;
+                
+                const gradeValues = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'F': 1 };
+                let totalGradePoints = 0;
+                let atRiskCount = 0;
+                
+                deptStudents.forEach(student => {
+                    totalGradePoints += gradeValues[student.grade];
+                    if (student.risk > 0.5) atRiskCount++;
+                });
+                
+                const avgGradePoint = totalGradePoints / count;
+                let avgGrade;
+                
+                if (avgGradePoint >= 4.5) avgGrade = 'A';
+                else if (avgGradePoint >= 3.5) avgGrade = 'B';
+                else if (avgGradePoint >= 2.5) avgGrade = 'C';
+                else if (avgGradePoint >= 1.5) avgGrade = 'D';
+                else avgGrade = 'F';
+                
+                departmentStats.push({
+                    name: dept,
+                    avgGrade: avgGrade,
+                    riskPercentage: Math.round((atRiskCount / count) * 100)
+                });
+            });
+            
+            // Sort by average grade (descending) and risk percentage (ascending)
+            departmentStats.sort((a, b) => {
+                const gradeDiff = b.avgGrade.charCodeAt(0) - a.avgGrade.charCodeAt(0);
+                if (gradeDiff !== 0) return gradeDiff;
+                return a.riskPercentage - b.riskPercentage;
+            });
+            
+            return departmentStats[0];
+        }
+        
+        // Get bottom performing department
+        function getBottomPerformingDepartment() {
+            const departments = ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'];
+            const departmentStats = [];
+            
+            departments.forEach(dept => {
+                const deptStudents = studentData.filter(s => s.department === dept);
+                const count = deptStudents.length;
+                
+                if (count === 0) return;
+                
+                const gradeValues = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'F': 1 };
+                let totalGradePoints = 0;
+                let atRiskCount = 0;
+                
+                deptStudents.forEach(student => {
+                    totalGradePoints += gradeValues[student.grade];
+                    if (student.risk > 0.5) atRiskCount++;
+                });
+                
+                const avgGradePoint = totalGradePoints / count;
+                let avgGrade;
+                
+                if (avgGradePoint >= 4.5) avgGrade = 'A';
+                else if (avgGradePoint >= 3.5) avgGrade = 'B';
+                else if (avgGradePoint >= 2.5) avgGrade = 'C';
+                else if (avgGradePoint >= 1.5) avgGrade = 'D';
+                else avgGrade = 'F';
+                
+                departmentStats.push({
+                    name: dept,
+                    avgGrade: avgGrade,
+                    riskPercentage: Math.round((atRiskCount / count) * 100)
+                });
+            });
+            
+            // Sort by average grade (ascending) and risk percentage (descending)
+            departmentStats.sort((a, b) => {
+                const gradeDiff = a.avgGrade.charCodeAt(0) - b.avgGrade.charCodeAt(0);
+                if (gradeDiff !== 0) return gradeDiff;
+                return b.riskPercentage - a.riskPercentage;
+            });
+            
+            return departmentStats[0];
+        }
+        
+        // Populate student tables with pagination
+        function populateStudentTables() {
+            const studentsBody = document.getElementById('students-table-body');
+            const riskBody = document.getElementById('risk-students-body');
+            
+            studentsBody.innerHTML = '';
+            riskBody.innerHTML = '';
+            
+            let atRiskCount = 0;
+            const riskThreshold = parseFloat(document.getElementById('riskThreshold').value);
+            
+            // Sort students by ID
+            const sortedStudents = [...studentData].sort((a, b) => a.id - b.id);
+            
+            // Pagination logic
+            const totalPages = Math.ceil(sortedStudents.length / studentsPerPage);
+            const paginatedStudents = sortedStudents.slice(
+                (currentPage - 1) * studentsPerPage,
+                currentPage * studentsPerPage
+            );
+            
+            // Populate main table with paginated students
+            paginatedStudents.forEach(student => {
+                // Determine risk class
+                const riskClass = student.risk > riskThreshold ? 'risk-high' : 
+                                 student.risk > (riskThreshold * 0.7) ? 'risk-medium' : 'risk-low';
+                
+                // Add to main table
+                const row = document.createElement('tr');
+                row.className = riskClass;
+                row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.department}</td>
+                    <td>${student.theoryAvg}/25</td>
+                    <td>${student.practicalAvg}/40</td>
+                    <td>${student.attendance}%</td>
+                    <td>${student.behavior}/10</td>
+                    <td><span class="badge badge-grade-${student.grade}">${student.grade}</span></td>
+                    <td>${student.risk}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary view-detail" data-id="${student.id}" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning edit-student" data-id="${student.id}" title="Edit Student">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                `;
+                studentsBody.appendChild(row);
+                
+                // Add to risk table if above threshold
+                if (student.risk > riskThreshold) {
+                    atRiskCount++;
+                    const riskRow = document.createElement('tr');
+                    riskRow.innerHTML = `
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.department}</td>
+                        <td>${student.risk}</td>
+                        <td><span class="badge badge-grade-${student.grade}">${student.grade}</span></td>
+                        <td>${student.attendance}%</td>
+                        <td>${student.behavior}/10</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary view-detail" data-id="${student.id}" title="View Details">
+                                <i class="fas fa-eye me-1"></i> View
+                            </button>
+                            <button class="btn btn-sm btn-success email-student" data-id="${student.id}" title="Send Email">
+                                <i class="fas fa-envelope me-1"></i> Contact
+                            </button>
+                        </td>
+                    `;
+                    riskBody.appendChild(riskRow);
+                }
+            });
+            
+            // Update pagination controls
+            updatePaginationControls(totalPages);
+            
+            // Update risk count in UI
+            document.getElementById('at-risk').textContent = atRiskCount;
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-detail').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = parseInt(this.getAttribute('data-id'));
+                    showStudentDetails(studentId);
+                });
+            });
+            
+            // Add event listeners to edit buttons
+            document.querySelectorAll('.edit-student').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = parseInt(this.getAttribute('data-id'));
+                    editStudent(studentId);
+                });
+            });
+            
+            // Add event listeners to email buttons
+            document.querySelectorAll('.email-student').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = parseInt(this.getAttribute('data-id'));
+                    emailStudent(studentId);
+                });
+            });
+            
+            // Update grade distribution chart
+            updateGradeDistributionChart();
+        }
+        
+        // Update pagination controls
+        function updatePaginationControls(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous" id="prevPage"><span aria-hidden="true">&laquo;</span></a>`;
+            pagination.appendChild(prevLi);
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstLi = document.createElement('li');
+                firstLi.className = 'page-item';
+                firstLi.innerHTML = `<a class="page-link" href="#" data-page="1">1</a>`;
+                pagination.appendChild(firstLi);
+                
+                if (startPage > 2) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(ellipsisLi);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+                pagination.appendChild(pageLi);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(ellipsisLi);
+                }
+                
+                const lastLi = document.createElement('li');
+                lastLi.className = 'page-item';
+                lastLi.innerHTML = `<a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>`;
+                pagination.appendChild(lastLi);
+            }
+            
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next" id="nextPage"><span aria-hidden="true">&raquo;</span></a>`;
+            pagination.appendChild(nextLi);
+            
+            // Add event listeners to pagination controls
+            document.querySelectorAll('[data-page]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentPage = parseInt(this.getAttribute('data-page'));
+                    populateStudentTables();
+                });
+            });
+            
+            document.getElementById('prevPage').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    populateStudentTables();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    populateStudentTables();
+                }
+            });
+        }
+        
+        // Filter students
+        function filterStudents() {
+            const deptFilter = document.getElementById('departmentFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            
+            const rows = document.querySelectorAll('#students-table-body tr');
+            
+            rows.forEach(row => {
+                const dept = row.cells[2].textContent;
+                const grade = row.cells[7].textContent.trim();
+                const id = row.cells[0].textContent;
+                const name = row.cells[1].textContent.toLowerCase();
+                
+                const deptMatch = !deptFilter || dept === deptFilter;
+                const gradeMatch = !gradeFilter || grade === gradeFilter;
+                const searchMatch = !searchTerm || 
+                                    id.includes(searchTerm) || 
+                                    name.includes(searchTerm) ||
+                                    row.textContent.toLowerCase().includes(searchTerm);
+                
+                row.style.display = (deptMatch && gradeMatch && searchMatch) ? '' : 'none';
+            });
+            
+            // Reset to first page when filtering
+            currentPage = 1;
+            populateStudentTables();
+        }
+        
+        // Filter predictions
+        function filterPredictions(riskLevel) {
+            const rows = document.querySelectorAll('#prediction-results-body tr');
+            
+            rows.forEach(row => {
+                const risk = parseFloat(row.cells[5].textContent);
+                let shouldShow = true;
+                if (riskLevel === 'high') {
+                    shouldShow = risk > 0.7;
+                } else if (riskLevel === 'medium') {
+                    shouldShow = risk > 0.4 && risk <= 0.7;
+                } else if (riskLevel === 'low') {
+                    shouldShow = risk <= 0.4;
+                }
+                
+                row.style.display = shouldShow ? '' : 'none';
+            });
+        }
+        
+        // Update grade distribution chart
+        function updateGradeDistributionChart() {
+            const gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+            
+            studentData.forEach(student => {
+                gradeCounts[student.grade]++;
+            });
+            
+            window.gradePieChart.data.datasets[0].data = [
+                gradeCounts.A,
+                gradeCounts.B,
+                gradeCounts.C,
+                gradeCounts.D,
+                gradeCounts.F
+            ];
+            
+            window.gradePieChart.update();
+        }
+        
+        // Update department charts
+        function updateDepartmentCharts() {
+            const departments = ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'];
+            const theoryAvgs = [];
+            const practicalAvgs = [];
+            const riskPercentages = [];
+            
+            departments.forEach(dept => {
+                const deptStudents = studentData.filter(s => s.department === dept);
+                const count = deptStudents.length;
+                
+                if (count === 0) {
+                    theoryAvgs.push(0);
+                    practicalAvgs.push(0);
+                    riskPercentages.push(0);
+                    return;
+                }
+                
+                // Calculate theory and practical averages
+                let theorySum = 0;
+                let practicalSum = 0;
+                let atRiskCount = 0;
+                
+                deptStudents.forEach(student => {
+                    theorySum += student.theoryAvg;
+                    practicalSum += student.practicalAvg;
+                    if (student.risk > 0.5) atRiskCount++;
+                });
+                
+                theoryAvgs.push(Math.round(theorySum / count));
+                practicalAvgs.push(Math.round(practicalSum / count));
+                riskPercentages.push(Math.round((atRiskCount / count) * 100));
+            });
+            
+            // Update department bar chart
+            window.deptBarChart.data.datasets[0].data = theoryAvgs;
+            window.deptBarChart.data.datasets[1].data = practicalAvgs;
+            window.deptBarChart.update();
+            
+            // Update risk bar chart
+            window.riskBarChart.data.datasets[0].data = riskPercentages;
+            window.riskBarChart.update();
+        }
+        
+        // Populate department statistics
+        function populateDepartmentStats() {
+            const deptStatsBody = document.getElementById('department-stats-body');
+            deptStatsBody.innerHTML = '';
+            
+            const departments = ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'];
+            
+            departments.forEach(dept => {
+                const deptStudents = studentData.filter(s => s.department === dept);
+                const count = deptStudents.length;
+                
+                if (count === 0) {
+                    deptStatsBody.innerHTML += `
+                        <tr>
+                            <td>${dept}</td>
+                            <td colspan="7" class="text-muted">No students in this department</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Calculate averages
+                let theorySum = 0;
+                let practicalSum = 0;
+                let attendanceSum = 0;
+                let behaviorSum = 0;
+                let atRiskCount = 0;
+                const gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+                
+                deptStudents.forEach(student => {
+                    theorySum += student.theoryAvg;
+                    practicalSum += student.practicalAvg;
+                    attendanceSum += student.attendance;
+                    behaviorSum += student.behavior;
+                    gradeCounts[student.grade]++;
+                    
+                    if (student.risk > 0.5) atRiskCount++;
+                });
+                
+                // Determine top grade
+                let topGrade = 'F';
+                if (gradeCounts.A > 0) topGrade = 'A';
+                else if (gradeCounts.B > 0) topGrade = 'B';
+                else if (gradeCounts.C > 0) topGrade = 'C';
+                else if (gradeCounts.D > 0) topGrade = 'D';
+                
+                deptStatsBody.innerHTML += `
+                    <tr>
+                        <td>${dept}</td>
+                        <td>${count}</td>
+                        <td>${Math.round(theorySum / count)}/25</td>
+                        <td>${Math.round(practicalSum / count)}/40</td>
+                        <td>${Math.round(attendanceSum / count)}%</td>
+                        <td>${(behaviorSum / count).toFixed(1)}/10</td>
+                        <td>${Math.round((atRiskCount / count) * 100)}%</td>
+                        <td><span class="badge badge-grade-${topGrade}">${topGrade}</span></td>
+                    </tr>
+                `;
+            });
+            
+            // Update department charts
+            updateDepartmentCharts();
+        }
+        
+        // Populate prediction results
+        function populatePredictionResults() {
+            const predictionBody = document.getElementById('prediction-results-body');
+            predictionBody.innerHTML = '';
+            
+            const riskThreshold = parseFloat(document.getElementById('riskThreshold').value);
+            
+            studentData.forEach(student => {
+                // Generate prediction if not already exists
+                if (!student.prediction) {
+                    student.prediction = generatePrediction(student);
+                }
+                
+                // Generate recommendations if not already exists
+                if (student.aiRecommendations.length === 0) {
+                    student.aiRecommendations = generateRecommendations(student);
+                }
+                
+                const riskClass = student.risk > riskThreshold ? 'risk-high' : 
+                                 student.risk > (riskThreshold * 0.7) ? 'risk-medium' : 'risk-low';
+                
+                predictionBody.innerHTML += `
+                    <tr class="${riskClass}">
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.department}</td>
+                        <td><span class="badge badge-grade-${student.grade}">${student.grade}</span></td>
+                        <td><span class="badge badge-grade-${student.prediction.grade}">${student.prediction.grade}</span></td>
+                        <td>${student.risk}</td>
+                        <td>${student.prediction.confidence}%</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary view-recommendations" data-id="${student.id}" title="View Recommendations">
+                                <i class="fas fa-list me-1"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // Add event listeners to recommendation buttons
+            document.querySelectorAll('.view-recommendations').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = parseInt(this.getAttribute('data-id'));
+                    showRecommendations(studentId);
+                });
+            });
+        }
+        
+        // Generate prediction for a student
+        function generatePrediction(student) {
+            // Simulate AI prediction with some randomness
+            const currentGradeValue = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'F': 1 }[student.grade];
+            
+            // Base prediction on current performance with some variance
+            let predictedGradeValue = currentGradeValue;
+            
+            // Adjust based on risk factors
+            if (student.attendance < 70) predictedGradeValue -= 0.5;
+            if (student.behavior < 5) predictedGradeValue -= 0.3;
+            if (student.theoryAvg < 12.5) predictedGradeValue -= 0.4;
+            if (student.practicalAvg < 20) predictedGradeValue -= 0.2;
+            
+            // Add some randomness
+            predictedGradeValue += (Math.random() - 0.5) * 0.5;
+            
+            // Ensure within bounds
+            predictedGradeValue = Math.max(1, Math.min(5, predictedGradeValue));
+            
+            // Convert back to letter grade
+            let predictedGrade;
+            if (predictedGradeValue >= 4.5) predictedGrade = 'A';
+            else if (predictedGradeValue >= 3.5) predictedGrade = 'B';
+            else if (predictedGradeValue >= 2.5) predictedGrade = 'C';
+            else if (predictedGradeValue >= 1.5) predictedGrade = 'D';
+            else predictedGrade = 'F';
+            
+            // Calculate confidence (higher for more extreme predictions)
+            const confidence = Math.round(80 + (Math.abs(predictedGradeValue - 3) * 10) + (Math.random() * 10));
+            
+            return {
+                grade: predictedGrade,
+                confidence: Math.min(100, confidence),
+                generatedAt: new Date().toISOString()
+            };
+        }
+        
+        // Generate recommendations for a student
+        function generateRecommendations(student) {
+            const recommendations = [];
+            
+            // Attendance recommendations
+            if (student.attendance < 70) {
+                recommendations.push(`Increase attendance (current: ${student.attendance}%) through counseling or parental contact`);
+            }
+            
+            // Behavior recommendations
+            if (student.behavior < 5) {
+                recommendations.push(`Address behavior issues (current rating: ${student.behavior}/10) with counseling or disciplinary action`);
+            }
+            
+            // Theory score recommendations
+            if (student.theoryAvg < 12.5) {
+                recommendations.push(`Provide additional tutoring for theory subjects (current average: ${student.theoryAvg}/25)`);
+            }
+            
+            // Practical score recommendations
+            if (student.practicalAvg < 20 && student.practicalAvg > 0) {
+                recommendations.push(`Offer lab assistance for practical subjects (current average: ${student.practicalAvg}/40)`);
+            }
+            
+            // Assignment recommendations
+            if (student.assignments < 5) {
+                recommendations.push(`Monitor and follow up on assignment completion (current: ${student.assignments}/10)`);
+            }
+            
+            // General recommendations based on risk level
+            if (student.risk > 0.7) {
+                recommendations.push('High risk - consider intensive intervention program');
+                recommendations.push('Schedule meeting with student and parents');
+            } else if (student.risk > 0.5) {
+                recommendations.push('Medium risk - assign academic mentor');
+            }
+            
+            // If no specific issues but still at risk
+            if (recommendations.length === 0 && student.risk > 0.5) {
+                recommendations.push('General academic counseling recommended');
+            }
+            
+            // If doing well
+            if (student.risk < 0.3) {
+                recommendations.push('Student performing well - consider advanced opportunities');
+            }
+            
+            return recommendations;
+        }
+        
+        // Show student recommendations
+        function showRecommendations(studentId) {
+            const student = studentData.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const recommendationsList = student.aiRecommendations.map(rec => 
+                `<li class="list-group-item">${rec}</li>`
+            ).join('');
+            
+            // Show in a modal or alert
+            alert(`
+                Recommendations for ${student.name} (ID: ${student.id}):
+                \n\n${student.aiRecommendations.join('\n• ')}
+            `);
+        }
+        
+        // Run predictions for all students
+        function runPredictions() {
+            studentData.forEach(student => {
+                if (!student.prediction) {
+                    student.prediction = generatePrediction(student);
+                }
+                
+                if (student.aiRecommendations.length === 0) {
+                    student.aiRecommendations = generateRecommendations(student);
+                }
+            });
+            
+            // Update prediction results table
+            populatePredictionResults();
+            
+            // Update model accuracy with slight random variation
+            const currentAccuracy = parseFloat(document.getElementById('modelAccuracy').textContent);
+            const newAccuracy = (currentAccuracy + (Math.random() - 0.5)).toFixed(1);
+            document.getElementById('modelAccuracy').textContent = Math.max(90, Math.min(95, newAccuracy));
+        }
+        
+        // Show student details in modal
+        function showStudentDetails(studentId) {
+            const student = studentData.find(s => s.id === studentId);
+            if (!student) return;
+            
+            // Set basic info
+            document.getElementById('detail-id').textContent = student.id;
+            document.getElementById('detail-name').textContent = student.name;
+            document.getElementById('detail-dept').textContent = student.department;
+            document.getElementById('detail-semester').textContent = student.semester;
+            
+            // Set grade with badge
+            const gradeBadge = document.getElementById('detail-grade');
+            gradeBadge.textContent = student.grade;
+            gradeBadge.className = 'badge badge-grade-' + student.grade;
+            
+            // Set risk score
+            document.getElementById('detail-risk').textContent = student.risk;
+            
+            // Set metrics
+            document.getElementById('detail-attendance').textContent = student.attendance + '%';
+            document.getElementById('detail-behavior').textContent = student.behavior + '/10';
+            document.getElementById('detail-assignments').textContent = student.assignments + '/10';
+            
+            // Update progress bars
+            document.querySelector('#detail-attendance + .progress .progress-bar').style.width = student.attendance + '%';
+            document.querySelector('#detail-behavior + .progress .progress-bar').style.width = (student.behavior * 10) + '%';
+            document.querySelector('#detail-assignments + .progress .progress-bar').style.width = (student.assignments * 10) + '%';
+            
+            // Update avatar with student initials
+            const initials = student.name.split(' ').map(n => n[0]).join('');
+            const avatar = document.getElementById('studentAvatar');
+            avatar.src = `https://ui-avatars.com/api/?name=${initials}&background=4e73df&color=ffffff&size=150`;
+            
+            // Update prediction alert
+            const predictionAlert = document.getElementById('predictionAlert');
+            if (student.prediction) {
+                predictionAlert.className = `alert alert-${student.risk > 0.5 ? 'warning' : 'success'}`;
+                predictionAlert.innerHTML = `
+                    <strong>Prediction:</strong> 
+                    Current grade: <span class="badge badge-grade-${student.grade}">${student.grade}</span>
+                    Predicted final grade: <span class="badge badge-grade-${student.prediction.grade}">${student.prediction.grade}</span>
+                    (Confidence: ${student.prediction.confidence}%)
+                `;
+            } else {
+                predictionAlert.className = 'alert alert-info';
+                predictionAlert.innerHTML = '<strong>Prediction:</strong> No prediction available yet.';
+            }
+            
+            // Update recommendations
+            const recommendationsList = document.getElementById('recommendationsList');
+            if (student.aiRecommendations.length > 0) {
+                recommendationsList.innerHTML = student.aiRecommendations.map(rec => 
+                    `<li class="list-group-item">${rec}</li>`
+                ).join('');
+            } else {
+                recommendationsList.innerHTML = '<li class="list-group-item">No recommendations yet</li>';
+            }
+            
+            // Set notes
+            document.getElementById('studentNotes').value = student.notes || '';
+            
+            // Initialize charts
+            initStudentCharts(student);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('studentDetailModal'));
+            modal.show();
+        }
+        
+        // Initialize student detail charts
+        function initStudentCharts(student) {
+            // Theory Radar Chart
+            const theoryCtx = document.getElementById('theoryRadarChart').getContext('2d');
+            if (window.theoryRadarChart) {
+                window.theoryRadarChart.destroy();
+            }
+            
+            window.theoryRadarChart = new Chart(theoryCtx, {
+                type: 'radar',
+                data: {
+                    labels: student.theoryScores.map((_, i) => `CA ${i+1}`),
+                    datasets: [{
+                        label: 'Scores',
+                        data: student.theoryScores,
+                        backgroundColor: 'rgba(78, 115, 223, 0.2)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(78, 115, 223, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 25
+                        }
+                    }
+                }
+            });
+            
+            // Practical Radar Chart (if applicable)
+            const practicalCtx = document.getElementById('practicalRadarChart').getContext('2d');
+            if (window.practicalRadarChart) {
+                window.practicalRadarChart.destroy();
+            }
+            
+            if (student.practicalScores.length > 0) {
+                window.practicalRadarChart = new Chart(practicalCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: student.practicalScores.map((_, i) => `PCA ${i+1}`),
+                        datasets: [{
+                            label: 'Scores',
+                            data: student.practicalScores,
+                            backgroundColor: 'rgba(28, 200, 138, 0.2)',
+                            borderColor: 'rgba(28, 200, 138, 1)',
+                            pointBackgroundColor: 'rgba(28, 200, 138, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(28, 200, 138, 1)'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    display: true
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 40
+                            }
+                        }
+                    }
+                });
+            } else {
+                practicalCtx.canvas.parentNode.innerHTML = '<p class="text-muted">No practical subjects this semester</p>';
+            }
+        }
+        
+        // Save student notes
+        function saveStudentNotes() {
+            const studentId = parseInt(document.getElementById('detail-id').textContent);
+            const notes = document.getElementById('studentNotes').value;
+            
+            const student = studentData.find(s => s.id === studentId);
+            if (student) {
+                student.notes = notes;
+                showToast('Notes saved successfully', 'success');
+            }
+        }
+        
+        // Generate student report
+        function generateStudentReport() {
+            const studentId = parseInt(document.getElementById('detail-id').textContent);
+            const student = studentData.find(s => s.id === studentId);
+            
+            if (!student) return;
+            
+            showLoading();
+            
+            // Simulate report generation delay
+            setTimeout(() => {
+                hideLoading();
+                
+                // In a real app, this would generate a PDF or open a print dialog
+                const reportWindow = window.open('', '_blank');
+                reportWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Student Performance Report - ${student.name}</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; line-height: 1.6; }
+                                h1, h2 { color: #4e73df; }
+                                .badge { padding: 3px 6px; border-radius: 3px; color: white; }
+                                .badge-grade-A { background-color: #28a745; }
+                                .badge-grade-B { background-color: #17a2b8; }
+                                .badge-grade-C { background-color: #ffc107; color: #212529; }
+                                .badge-grade-D { background-color: #fd7e14; }
+                                .badge-grade-F { background-color: #dc3545; }
+                                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                th { background-color: #f2f2f2; }
+                                .risk-high { background-color: #f8d7da; }
+                                .risk-medium { background-color: #fff3cd; }
+                                .risk-low { background-color: #d4edda; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>Student Performance Report</h1>
+                            <h2>${student.name} (ID: ${student.id})</h2>
+                            
+                            <h3>Basic Information</h3>
+                            <table>
+                                <tr>
+                                    <th>Department</th>
+                                    <td>${student.department}</td>
+                                </tr>
+                                <tr>
+                                    <th>Semester</th>
+                                    <td>${student.semester}</td>
+                                </tr>
+                                <tr>
+                                    <th>Current Grade</th>
+                                    <td><span class="badge badge-grade-${student.grade}">${student.grade}</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Risk Score</th>
+                                    <td>${student.risk}</td>
+                                </tr>
+                            </table>
+                            
+                            <h3>Performance Metrics</h3>
+                            <table>
+                                <tr>
+                                    <th>Theory Average (CA)</th>
+                                    <td>${student.theoryAvg}/25</td>
+                                </tr>
+                                <tr>
+                                    <th>Practical Average (PCA)</th>
+                                    <td>${student.practicalAvg}/40</td>
+                                </tr>
+                                <tr>
+                                    <th>Attendance</th>
+                                    <td>${student.attendance}%</td>
+                                </tr>
+                                <tr>
+                                    <th>Behavior Rating</th>
+                                    <td>${student.behavior}/10</td>
+                                </tr>
+                                <tr>
+                                    <th>Assignment Completion</th>
+                                    <td>${student.assignments}/10</td>
+                                </tr>
+                            </table>
+                            
+                            <h3>Performance Prediction</h3>
+                            <table>
+                                <tr>
+                                    <th>Current Grade</th>
+                                    <td><span class="badge badge-grade-${student.grade}">${student.grade}</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Predicted Final Grade</th>
+                                    <td><span class="badge badge-grade-${student.prediction?.grade || 'N/A'}">${student.prediction?.grade || 'N/A'}</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Confidence</th>
+                                    <td>${student.prediction?.confidence || 'N/A'}%</td>
+                                </tr>
+                            </table>
+                            
+                            <h3>Recommendations</h3>
+                            <ul>
+                                ${student.aiRecommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                            
+                            <h3>Notes</h3>
+                            <p>${student.notes || 'No notes available.'}</p>
+                            
+                            <p style="margin-top: 30px; font-size: 0.9em; color: #666;">
+                                Report generated on ${new Date().toLocaleDateString()} by Path AI Predictor
+                            </p>
+                        </body>
+                    </html>
+                `);
+                
+                reportWindow.document.close();
+                setTimeout(() => {
+                    reportWindow.print();
+                }, 500);
+                
+                showToast('Report generated successfully', 'success');
+            }, 1500);
+        }
+        
+        // Add new student
+        function addNewStudent() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            const department = document.getElementById('department').value;
+            const semester = document.getElementById('semester').value;
+            const attendance = document.getElementById('attendance').value;
+            const behavior = document.getElementById('behavior').value;
+            const assignments = document.getElementById('assignments').value;
+            
+            // Validate required fields
+            if (!id || !name || !department || !semester || !attendance || !behavior || !assignments) {
+                showToast('Please fill all required fields', 'danger');
+                return;
+            }
+            
+            // Check if ID already exists
+            if (studentData.some(s => s.id === id)) {
+                showToast('Student ID already exists', 'danger');
+                return;
+            }
+            
+            // Get theory scores
+            const semesterConfig = semesters[semester];
+            const theoryScores = [];
+            let theorySum = 0;
+            
+            for (let i = 1; i <= semesterConfig.theoryCount; i++) {
+                const score = parseInt(document.getElementById(`theory${i}`).value);
+                if (isNaN(score) || score < 0 || score > 25) {
+                    showToast(`Invalid theory score for CA ${i} (must be 0-25)`, 'danger');
+                    return;
+                }
+                theoryScores.push(score);
+                theorySum += score;
+            }
+            
+            const theoryAvg = Math.round(theorySum / semesterConfig.theoryCount);
+            
+            // Get practical scores if they exist for this semester
+            const practicalScores = [];
+            let practicalSum = 0;
+            
+            if (semesterConfig.practicalCount > 0) {
+                for (let i = 1; i <= semesterConfig.practicalCount; i++) {
+                    const score = parseInt(document.getElementById(`practical${i}`).value);
+                    if (isNaN(score) || score < 0 || score > 40) {
+                        showToast(`Invalid practical score for PCA ${i} (must be 0-40)`, 'danger');
+                        return;
+                    }
+                    practicalScores.push(score);
+                    practicalSum += score;
+                }
+            }
+            
+            const practicalAvg = semesterConfig.practicalCount > 0 ? 
+                Math.round(practicalSum / semesterConfig.practicalCount) : 0;
+            
+            // Calculate performance score and grade
+            const performanceScore = calculatePerformanceScore(
+                theoryAvg, 
+                practicalAvg, 
+                parseInt(attendance), 
+                parseInt(behavior), 
+                parseInt(assignments),
+                parseInt(semester)
+            );
+            
+            const grade = calculateGrade(performanceScore);
+            const risk = (1 - performanceScore).toFixed(2);
+            
+            // Create new student
+            const newStudent = {
+                id: id,
+                name: name,
+                department: department,
+                semester: parseInt(semester),
+                theoryScores: theoryScores,
+                practicalScores: practicalScores,
+                theoryAvg: theoryAvg,
+                practicalAvg: practicalAvg,
+                attendance: parseInt(attendance),
+                behavior: parseInt(behavior),
+                assignments: parseInt(assignments),
+                risk: parseFloat(risk),
+                grade: grade,
+                notes: '',
+                lastUpdated: new Date().toISOString(),
+                prediction: null,
+                aiRecommendations: []
+            };
+            
+            // Add to data
+            studentData.push(newStudent);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addStudentModal'));
+            modal.hide();
+            
+            // Refresh tables
+            populateStudentTables();
+            populateDepartmentStats();
+            
+            // Show success message
+            showToast('Student added successfully', 'success');
+        }
+        
+        // Edit student
+        function editStudent(studentId) {
+            const student = studentData.find(s => s.id === studentId);
+            if (!student) return;
+            
+            // Set form values
+            document.getElementById('editStudentId').value = student.id;
+            document.getElementById('editId').value = student.id;
+            document.getElementById('editName').value = student.name;
+            document.getElementById('editDepartment').value = student.department;
+            document.getElementById('editSemester').value = student.semester;
+            document.getElementById('editAttendance').value = student.attendance;
+            document.getElementById('editBehavior').value = student.behavior;
+            document.getElementById('editAssignments').value = student.assignments;
+            
+            // Update semester fields
+            document.getElementById('editSemester').dispatchEvent(new Event('change'));
+            
+            // Set theory scores
+            for (let i = 0; i < student.theoryScores.length; i++) {
+                const input = document.getElementById(`editTheory${i+1}`);
+                if (input) input.value = student.theoryScores[i];
+            }
+            
+            // Set practical scores
+            for (let i = 0; i < student.practicalScores.length; i++) {
+                const input = document.getElementById(`editPractical${i+1}`);
+                if (input) input.value = student.practicalScores[i];
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+            modal.show();
+        }
+        
+        // Update student
+        function updateStudent() {
+            const studentId = document.getElementById('editStudentId').value;
+            const student = studentData.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const name = document.getElementById('editName').value.trim();
+            const department = document.getElementById('editDepartment').value;
+            const semester = document.getElementById('editSemester').value;
+            const attendance = document.getElementById('editAttendance').value;
+            const behavior = document.getElementById('editBehavior').value;
+            const assignments = document.getElementById('editAssignments').value;
+            
+            // Validate required fields
+            if (!name || !department || !semester || !attendance || !behavior || !assignments) {
+                showToast('Please fill all required fields', 'danger');
+                return;
+            }
+            
+            // Get theory scores
+            const semesterConfig = semesters[semester];
+            const theoryScores = [];
+            let theorySum = 0;
+            
+            for (let i = 1; i <= semesterConfig.theoryCount; i++) {
+                const score = parseInt(document.getElementById(`editTheory${i}`).value);
+                if (isNaN(score) || score < 0 || score > 25) {
+                    showToast(`Invalid theory score for CA ${i} (must be 0-25)`, 'danger');
+                    return;
+                }
+                theoryScores.push(score);
+                theorySum += score;
+            }
+            
+            const theoryAvg = Math.round(theorySum / semesterConfig.theoryCount);
+            
+            // Get practical scores if they exist for this semester
+            const practicalScores = [];
+            let practicalSum = 0;
+            
+            if (semesterConfig.practicalCount > 0) {
+                for (let i = 1; i <= semesterConfig.practicalCount; i++) {
+                    const score = parseInt(document.getElementById(`editPractical${i}`).value);
+                    if (isNaN(score) || score < 0 || score > 40) {
+                        showToast(`Invalid practical score for PCA ${i} (must be 0-40)`, 'danger');
+                        return;
+                    }
+                    practicalScores.push(score);
+                    practicalSum += score;
+                }
+            }
+            
+            const practicalAvg = semesterConfig.practicalCount > 0 ? 
+                Math.round(practicalSum / semesterConfig.practicalCount) : 0;
+            
+            // Calculate performance score and grade
+            const performanceScore = calculatePerformanceScore(
+                theoryAvg, 
+                practicalAvg, 
+                parseInt(attendance), 
+                parseInt(behavior), 
+                parseInt(assignments),
+                parseInt(semester)
+            );
+            
+            const grade = calculateGrade(performanceScore);
+            const risk = (1 - performanceScore).toFixed(2);
+            
+            // Update student
+            student.name = name;
+            student.department = department;
+            student.semester = parseInt(semester);
+            student.theoryScores = theoryScores;
+            student.practicalScores = practicalScores;
+            student.theoryAvg = theoryAvg;
+            student.practicalAvg = practicalAvg;
+            student.attendance = parseInt(attendance);
+            student.behavior = parseInt(behavior);
+            student.assignments = parseInt(assignments);
+            student.risk = parseFloat(risk);
+            student.grade = grade;
+            student.lastUpdated = new Date().toISOString();
+            
+            // Regenerate prediction and recommendations
+            student.prediction = generatePrediction(student);
+            student.aiRecommendations = generateRecommendations(student);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
+            modal.hide();
+            
+            // Refresh tables
+            populateStudentTables();
+            populateDepartmentStats();
+            populatePredictionResults();
+            
+            // Show success message
+            showToast('Student updated successfully', 'success');
+        }
+        
+        // Email student
+        function emailStudent(studentId) {
+            const student = studentData.find(s => s.id === studentId);
+            if (!student) return;
+            
+            // In a real app, this would open the default email client
+            alert(`Preparing to email ${student.name} (ID: ${student.id})...`);
+            showToast(`Email dialog opened for ${student.name}`, 'info');
+        }
+        
+        // Email all at-risk students
+        function emailAtRiskStudents() {
+            const riskThreshold = parseFloat(document.getElementById('riskThreshold').value);
+            const atRiskStudents = studentData.filter(s => s.risk > riskThreshold);
+            
+            if (atRiskStudents.length === 0) {
+                showToast('No at-risk students to email', 'info');
+                return;
+            }
+            
+            // In a real app, this would prepare a bulk email
+            const studentList = atRiskStudents.map(s => `${s.name} (ID: ${s.id})`).join('\n');
+            alert(`Preparing to email ${atRiskStudents.length} at-risk students:\n\n${studentList}`);
+            showToast(`Bulk email dialog opened for ${atRiskStudents.length} students`, 'info');
+        }
+        
+        // Export dashboard data
+        function exportDashboard() {
+            showLoading();
+            
+            // Simulate export delay
+            setTimeout(() => {
+                hideLoading();
+                
+                // In a real app, this would generate a CSV or Excel file
+                const dashboardData = {
+                    summary: {
+                        totalStudents: studentData.length,
+                        atRiskStudents: studentData.filter(s => s.risk > 0.5).length,
+                        avgAttendance: Math.round(studentData.reduce((sum, s) => sum + s.attendance, 0)) / studentData.length,
+                        gradeDistribution:calculateGradeDistribution()
+                    },
+                    riskStudents: studentData.filter(s => s.risk > 0.5).map(s => ({
+                        id: s.id,
+                        name: s.name,
+                        department: s.department,
+                        risk: s.risk,
+                        grade: s.grade
+                    }))
+                };
+                
+                const dataStr = JSON.stringify(dashboardData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportName = 'path-ai-dashboard-export-' + new Date().toISOString().slice(0, 10) + '.json';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportName);
+                linkElement.click();
+                
+                showToast('Dashboard data exported successfully', 'success');
+            }, 1000);
+        }
+        
+        // Export student data
+        function exportStudents() {
+            showLoading();
+            
+            // Simulate export delay
+            setTimeout(() => {
+                hideLoading();
+                
+                // Prepare CSV data
+                const headers = [
+                    'ID', 'Name', 'Department', 'Semester', 
+                    'Theory Avg', 'Practical Avg', 'Attendance', 
+                    'Behavior', 'Assignments', 'Grade', 'Risk'
+                ];
+                
+                const csvRows = [
+                    headers.join(','),
+                    ...studentData.map(s => [
+                        s.id,
+                        `"${s.name}"`,
+                        s.department,
+                        s.semester,
+                        s.theoryAvg,
+                        s.practicalAvg,
+                        s.attendance,
+                        s.behavior,
+                        s.assignments,
+                        s.grade,
+                        s.risk
+                    ].join(','))
+                ];
+                
+                const csvData = csvRows.join('\n');
+                const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csvData);
+                
+                const exportName = 'path-ai-students-export-' + new Date().toISOString().slice(0, 10) + '.csv';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportName);
+                linkElement.click();
+                
+                showToast('Student data exported successfully', 'success');
+            }, 1000);
+        }
+        
+        // Export department data
+        function exportDepartmentData() {
+            showLoading();
+            
+            // Simulate export delay
+            setTimeout(() => {
+                hideLoading();
+                
+                const departments = ['CSE', 'ECE', 'EE', 'IT', 'AIML', 'CE'];
+                const departmentStats = [];
+                
+                departments.forEach(dept => {
+                    const deptStudents = studentData.filter(s => s.department === dept);
+                    const count = deptStudents.length;
+                    
+                    if (count === 0) return;
+                    
+                    // Calculate averages
+                    let theorySum = 0;
+                    let practicalSum = 0;
+                    let attendanceSum = 0;
+                    let behaviorSum = 0;
+                    let atRiskCount = 0;
+                    
+                    deptStudents.forEach(student => {
+                        theorySum += student.theoryAvg;
+                        practicalSum += student.practicalAvg;
+                        attendanceSum += student.attendance;
+                        behaviorSum += student.behavior;
+                        if (student.risk > 0.5) atRiskCount++;
+                    });
+                    
+                    departmentStats.push({
+                        Department: dept,
+                        Students: count,
+                        'Theory Avg': Math.round(theorySum / count),
+                        'Practical Avg': Math.round(practicalSum / count),
+                        'Attendance Avg': Math.round(attendanceSum / count),
+                        'Behavior Avg': (behaviorSum / count).toFixed(1),
+                        'At Risk %': Math.round((atRiskCount / count) * 100)
+                    });
+                });
+                
+                // Prepare CSV data
+                const headers = Object.keys(departmentStats[0]);
+                
+                const csvRows = [
+                    headers.join(','),
+                    ...departmentStats.map(d => [
+                        d.Department,
+                        d.Students,
+                        d['Theory Avg'],
+                        d['Practical Avg'],
+                        d['Attendance Avg'],
+                        d['Behavior Avg'],
+                        d['At Risk %']
+                    ].join(','))
+                ];
+                
+                const csvData = csvRows.join('\n');
+                const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csvData);
+                
+                const exportName = 'path-ai-departments-export-' + new Date().toISOString().slice(0, 10) + '.csv';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportName);
+                linkElement.click();
+                
+                showToast('Department data exported successfully', 'success');
+            }, 1000);
+        }
+        
+        // Print dashboard
+        function printDashboard() {
+            // In a real app, this would prepare a print-friendly version
+            window.print();
+        }
+        
+        // Print student list
+        function printStudents() {
+            // In a real app, this would prepare a print-friendly version
+            window.print();
+        }
+        
+        // Download CSV template
+        function downloadTemplate() {
+            showLoading();
+            
+            // Simulate delay
+            setTimeout(() => {
+                hideLoading();
+                
+                // Basic CSV template
+                const headers = [
+                    'ID', 'Name', 'Department', 'Semester', 
+                    'CA1', 'CA2', 'CA3', 'CA4', 'CA5', 'CA6', 'CA7',
+                    'PCA1', 'PCA2', 'PCA3', 'PCA4',
+                    'Attendance', 'Behavior', 'Assignments'
+                ];
+                
+                const csvRows = [
+                    headers.join(','),
+                    'S001,John Doe,CSE,1,18,20,15,,,,' + '25,30,35,,,85,8,9'
+                ];
+                
+                const csvData = csvRows.join('\n');
+                const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csvData);
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', 'path-ai-student-template.csv');
+                linkElement.click();
+                
+                showToast('CSV template downloaded', 'info');
+            }, 500);
+        }
+        
+        // Import student data
+        function importStudentData() {
+            const fileInput = document.getElementById('formFile');
+            const semesterFormat = document.getElementById('dataFormat').value;
+            
+            if (!fileInput.files.length) {
+                showToast('Please select a file to import', 'danger');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            showLoading();
+            
+            reader.onload = function(e) {
+                try {
+                    const results = Papa.parse(e.target.result, {
+                        header: true,
+                        skipEmptyLines: true
+                    });
+                    
+                    if (results.errors.length > 0) {
+                        throw new Error('Error parsing CSV file');
+                    }
+                    
+                    // Process each row
+                    const newStudents = [];
+                    const semesterConfig = semesters[parseInt(semesterFormat.replace('semester', ''))];
+                    
+                    results.data.forEach(row => {
+                        // Validate required fields
+                        if (!row.ID || !row.Name || !row.Department || !row.Semester) {
+                            return; // Skip invalid rows
+                        }
+                        
+                        // Get theory scores
+                        const theoryScores = [];
+                        let theorySum = 0;
+                        
+                        for (let i = 1; i <= semesterConfig.theoryCount; i++) {
+                            const score = parseInt(row[`CA${i}`]) || 0;
+                            if (score < 0 || score > 25) {
+                                throw new Error(`Invalid theory score for CA${i} (must be 0-25)`);
+                            }
+                            theoryScores.push(score);
+                            theorySum += score;
+                        }
+                        
+                        const theoryAvg = Math.round(theorySum / semesterConfig.theoryCount);
+                        
+                        // Get practical scores
+                        const practicalScores = [];
+                        let practicalSum = 0;
+                        
+                        for (let i = 1; i <= semesterConfig.practicalCount; i++) {
+                            const score = parseInt(row[`PCA${i}`]) || 0;
+                            if (score < 0 || score > 40) {
+                                throw new Error(`Invalid practical score for PCA${i} (must be 0-40)`);
+                            }
+                            practicalScores.push(score);
+                            practicalSum += score;
+                        }
+                        
+                        const practicalAvg = semesterConfig.practicalCount > 0 ? 
+                            Math.round(practicalSum / semesterConfig.practicalCount) : 0;
+                        
+                        // Get other metrics
+                        const attendance = parseInt(row.Attendance) || 0;
+                        const behavior = parseInt(row.Behavior) || 0;
+                        const assignments = parseInt(row.Assignments) || 0;
+                        
+                        // Calculate performance score and grade
+                        const performanceScore = calculatePerformanceScore(
+                            theoryAvg, 
+                            practicalAvg, 
+                            attendance, 
+                            behavior, 
+                            assignments,
+                            parseInt(semesterFormat.replace('semester', ''))
+                        );
+                        
+                        const grade = calculateGrade(performanceScore);
+                        const risk = (1 - performanceScore).toFixed(2);
+                        
+                        // Check if student already exists
+                        const existingIndex = studentData.findIndex(s => s.id === row.ID);
+                        
+                        if (existingIndex >= 0) {
+                            // Update existing student
+                            studentData[existingIndex] = {
+                                ...studentData[existingIndex],
+                                name: row.Name,
+                                department: row.Department,
+                                semester: parseInt(row.Semester),
+                                theoryScores: theoryScores,
+                                practicalScores: practicalScores,
+                                theoryAvg: theoryAvg,
+                                practicalAvg: practicalAvg,
+                                attendance: attendance,
+                                behavior: behavior,
+                                assignments: assignments,
+                                risk: parseFloat(risk),
+                                grade: grade,
+                                lastUpdated: new Date().toISOString()
+                            };
+                        } else {
+                            // Add new student
+                            newStudents.push({
+                                id: row.ID,
+                                name: row.Name,
+                                department: row.Department,
+                                semester: parseInt(row.Semester),
+                                theoryScores: theoryScores,
+                                practicalScores: practicalScores,
+                                theoryAvg: theoryAvg,
+                                practicalAvg: practicalAvg,
+                                attendance: attendance,
+                                behavior: behavior,
+                                assignments: assignments,
+                                risk: parseFloat(risk),
+                                grade: grade,
+                                notes: '',
+                                lastUpdated: new Date().toISOString(),
+                                prediction: null,
+                                aiRecommendations: []
+                            });
+                        }
+                    });
+                    
+                    // Add new students to data
+                    studentData.push(...newStudents);
+                    
+                    // Update UI
+                    populateStudentTables();
+                    populateDepartmentStats();
+                    populatePredictionResults();
+                    updateSummaryCards();
+                    
+                    hideLoading();
+                    showToast(`Successfully imported ${results.data.length} students (${newStudents.length} new, ${results.data.length - newStudents.length} updated)`, 'success');
+                    
+                } catch (error) {
+                    hideLoading();
+                    showToast(`Import failed: ${error.message}`, 'danger');
+                    console.error('Import error:', error);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Save system settings
+        function saveSystemSettings(e) {
+            e.preventDefault();
+            
+            const riskThreshold = document.getElementById('riskThreshold').value;
+            const refreshFrequency = document.getElementById('refreshFrequency').value;
+            const emailAlerts = document.getElementById('emailAlerts').checked;
+            const autoPredictions = document.getElementById('autoPredictions').checked;
+            
+            // In a real app, this would save to a server
+            localStorage.setItem('systemSettings', JSON.stringify({
+                riskThreshold,
+                refreshFrequency,
+                emailAlerts,
+                autoPredictions
+            }));
+            
+            // Update UI with new threshold
+            populateStudentTables();
+            populatePredictionResults();
+            
+            showToast('System settings saved successfully', 'success');
+        }
+        
+        // Update summary cards
+        function updateSummaryCards() {
+            const totalStudents = studentData.length;
+            const atRiskCount = studentData.filter(s => s.risk > 0.5).length;
+            const avgAttendance = Math.round(studentData.reduce((sum, s) => sum + s.attendance, 0) / totalStudents);
+            
+            // Calculate average grade
+            const gradeValues = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'F': 1 };
+            let totalGradePoints = 0;
+            
+            studentData.forEach(student => {
+                totalGradePoints += gradeValues[student.grade];
+            });
+            
+            const avgGradePoint = totalGradePoints / totalStudents;
+            let avgGrade;
+            
+            if (avgGradePoint >= 4.5) avgGrade = 'A';
+            else if (avgGradePoint >= 3.5) avgGrade = 'B';
+            else if (avgGradePoint >= 2.5) avgGrade = 'C';
+            else if (avgGradePoint >= 1.5) avgGrade = 'D';
+            else avgGrade = 'F';
+            
+            // Update cards
+            document.getElementById('total-students').textContent = totalStudents;
+            document.getElementById('at-risk').textContent = atRiskCount;
+            document.getElementById('avg-attendance').textContent = avgAttendance + '%';
+            document.getElementById('avg-grade').innerHTML = `<span class="badge badge-grade-${avgGrade}">${avgGrade}</span>`;
+            
+            // Update grade distribution chart
+            updateGradeDistributionChart();
+        }
+        
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+        }
+        
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
