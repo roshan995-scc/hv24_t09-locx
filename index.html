@@ -176,7 +176,565 @@
             </div>
         </div>
     </section>
-    
+   <!--chat bot devlopment -->
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Path AI | Student Performance & Behavior Prediction</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <style>
+       /* stlyes are incoperated in the html fie for better management by the whole team   */
+:root {
+  --primary: #4361ee;
+  --primary-dark: #3a56d4;
+  --secondary: #3f37c9;
+  --accent: #4cc9f0;
+  --mental: #ff6b6b;
+  --mental-dark: #e05555;
+  --dark: #1a1a2e;
+  --light: #f8f9fa;
+  --gray: #6c757d;
+  --light-gray: #f1f3f5;
+}
+
+/* Chatbot Container */
+.chatbot-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 380px;
+  max-width: 90vw;
+  height: 550px;
+  max-height: 70vh;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(67, 97, 238, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(30px) scale(0.95);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  border: 1px solid rgba(67, 97, 238, 0.1);
+}
+
+.chatbot-container.active {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Header with Animated Mode Toggle */
+.chatbot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  position: relative;
+  z-index: 2;
+}
+ .chatbot-header::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(67, 97, 238, 0.2), transparent);
+  z-index: -1;
+}
+
+.chatbot-mode-toggle {
+  flex: 1;
+  margin-right: 15px;
+}
+
+.toggle-track {
+  position: relative;
+  display: flex;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  padding: 5px;
+  height: 40px;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0px;
+  left: 5px;
+  width: calc(50% - 5px);
+  height: 40px;
+  background: white;
+  border-radius: 50px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 0;
+}
+
+.toggle-track.mental-mode .toggle-slider {
+  transform: translateX(100%);
+  background: var(--mental);
+}
+
+.mode-btn {
+  position: relative;
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: white;
+  padding: 0 15px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.mode-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5px;
+}
+
+.mode-btn.active {
+  color: var(--primary);
+}
+
+.toggle-track.mental-mode .mode-btn[data-mode="mental"] {
+  color: white;
+}
+
+.close-chatbot {
+  background: none;
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-chatbot:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.close-chatbot svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Messages Area with Beautiful Animations */
+.chatbot-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f9faff;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(67, 97, 238, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(67, 97, 238, 0.03) 0%, transparent 20%);
+}
+
+.message {
+  max-width: 85%;
+  padding: 15px 18px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  position: relative;
+  animation: messageIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transform-origin: bottom;
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+}
+
+@keyframes messageIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.bot-message {
+  align-self: flex-start;
+  background: white;
+  border: 1px solid rgba(67, 97, 238, 0.1);
+  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.05);
+  border-bottom-left-radius: 4px;
+}
+
+.user-message {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+  border-bottom-right-radius: 4px;
+  animation-delay: 0.1s;
+}
+
+.mental-mode .user-message {
+  background: linear-gradient(135deg, var(--mental) 0%, var(--mental-dark) 100%);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
+}
+
+.message-time {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 6px;
+  text-align: right;
+}
+
+.bot-message .message-time {
+  color: var(--gray);
+}
+
+/* Welcome Message Animation */
+.welcome-message {
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(67, 97, 238, 0.2);
+  animation: floatParticle 4s ease-in-out infinite;
+}
+
+.welcome-message h3 {
+  position: relative;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.welcome-message p {
+  position: relative;
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+
+@keyframes floatParticle {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(var(--x), var(--y));
+    opacity: 0.6;
+  }
+}
+ .chatbot-input {
+  display: flex;
+  padding: 15px 20px;
+  border-top: 1px solid rgba(67, 97, 238, 0.1);
+  background: white;
+  position: relative;
+  z-index: 2;
+}
+
+.chatbot-input::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to top, white, transparent);
+  pointer-events: none;
+}
+
+.message-input {
+  flex: 1;
+  border: 1px solid rgba(67, 97, 238, 0.2);
+  padding: 12px 18px;
+  border-radius: 50px;
+  background: #f5f7ff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(67, 97, 238, 0.05);
+}
+
+.message-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.send-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.mental-mode .send-button {
+  background: linear-gradient(135deg, var(--mental) 0%, var(--mental-dark) 100%);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
+}
+
+.send-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.send-button:hover::before {
+  opacity: 1;
+}
+
+.send-button:active {
+  transform: scale(0.95);
+}
+
+.send-button svg {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.send-button svg path {
+  stroke: white;
+}
+
+/* Floating Toggle Button with Ripple Effect */
+.chatbot-toggle {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
+  z-index: 999;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+}
+
+.chatbot-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 40px rgba(67, 97, 238, 0.4);
+}
+
+.chatbot-toggle.mental-mode {
+  background: linear-gradient(135deg, var(--mental) 0%, var(--mental-dark) 100%);
+  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+}
+
+.chatbot-toggle.mental-mode:hover {
+  box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+}
+
+.toggle-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+}
+
+.toggle-icon svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  stroke-width: 2.5px;
+}
+
+.icon-academic {
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+.icon-mental {
+  opacity: 0;
+  transform: rotate(-30deg);
+}
+
+.chatbot-toggle.mental-mode .icon-academic {
+  opacity: 0;
+  transform: rotate(30deg);
+}
+
+.chatbot-toggle.mental-mode .icon-mental {
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: ripple 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 18px;
+  background: white;
+  border-radius: 18px;
+  border: 1px solid rgba(67, 97, 238, 0.1);
+  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.05);
+  max-width: 120px;
+}
+
+.typing-text {
+  font-size: 0.8rem;
+  color: var(--gray);
+  margin-right: 8px;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  animation: typingAnimation 1.4s infinite ease-in-out;
+}
+
+.mental-mode .typing-dot {
+  background-color: var(--mental);
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+  0%, 60%, 100% { 
+    transform: translateY(0); 
+    opacity: 0.6;
+  }
+  30% { 
+    transform: translateY(-5px); 
+    opacity: 1;
+  }
+}
+
+/* Mode Switch Animation */
+.mode-switch-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 10;
+  animation: fadeOut 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .chatbot-container {
+    width: 92vw;
+    height: 70vh;
+    right: 4vw;
+    bottom: 10px;
+  }
+  
+  .chatbot-toggle {
+    width: 56px;
+    height: 56px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .chatbot-header {
+    padding: 12px 15px;
+  }
+  
+  .chatbot-messages {
+    padding: 15px;
+  }
+  
+  .chatbot-input {
+    padding: 12px 15px;
+  }
+  
+  .message {
+    padding: 12px 15px;
+    font-size: 0.9rem;
+  }
+}
+        </style>
 </body>
 </html>
     
