@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }
+        .grade-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .marks-input {
+            margin-bottom: 15px;
+        }
+        .subject-group {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .subject-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #0d6efd;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .metric-card {
+            text-align: center;
+            padding: 15px;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .plot-container {
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .weakest-subjects {
+            background-color: #fff3f3;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .weakest-subjects h6 {
+            color: #e74c3c;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Student Performance Predictor</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="predict-tab" data-bs-toggle="tab" data-bs-target="#predict" type="button" role="tab">Predict</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Prediction Form Tab -->
+            <div class="tab-pane fade show active" id="predict" role="tabpanel">
+        <form id="predictionForm">
+            <div class="mb-3">
+                <label for="semester" class="form-label">Semester</label>
+                <select class="form-select" id="semester" required>
+                    <option value="">Select Semester</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                </select>
+            </div>
+
+            <div id="marksContainer">
+                <!-- Marks inputs will be dynamically added here -->
+            </div>
+
+            <div class="mb-3">
+                <label for="behavior" class="form-label">Behavior Score (1-10)</label>
+                <input type="number" class="form-control" id="behavior" min="1" max="10" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="attendance" class="form-label">Attendance Percentage (0-100)</label>
+                <input type="number" class="form-control" id="attendance" min="0" max="100" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Predict Performance</button>
+        </form>
+
+        <div id="result" class="result-card" style="display: none;">
+            <h3 class="text-center mb-4">Prediction Results</h3>
+            <div class="grade-display" id="gradeDisplay"></div>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Dropout Risk:</strong> <span id="dropoutRisk"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade" id="dashboard" role="tabpanel">
+                <!-- Semester Selector -->
+                <div class="mb-3">
+                    <label for="dashboardSemester" class="form-label">Select Semester:</label>
+                    <select class="form-select" id="dashboardSemester">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                        <option value="7">Semester 7</option>
+                        <option value="8">Semester 8</option>
+                    </select>
+                </div>
+
+                <!-- Summary Metrics -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="metric-value" id="totalStudents">-</div>
+                            <div class="metric-label">Total Students</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="metric-value" id="averageGrade">-</div>
+                            <div class="metric-label">Average Grade</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="metric-value" id="dropoutRiskMetric">-</div>
+                            <div class="metric-label">Dropout Risk</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="metric-value" id="attendanceRate">-</div>
+                            <div class="metric-label">Attendance Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grade Distribution -->
+                <div class="card">
+                    <h5>Grade Distribution</h5>
+                    <div id="gradeDistribution" class="plot-container"></div>
+                </div>
+
+                <!-- Dropout Risk -->
+                <div class="card">
+                    <h5>Dropout Risk Distribution</h5>
+                    <div id="dropoutRiskPlot" class="plot-container"></div>
+                </div>
+
+                <!-- Attendance vs Grade -->
+                <div class="card">
+                    <h5>Attendance vs Grade Correlation</h5>
+                    <div id="attendanceVsGrade" class="plot-container"></div>
+                </div>
+
+                <!-- Behavior vs Grade -->
+                <div class="card">
+                    <h5>Behavior vs Grade Correlation</h5>
+                    <div id="behaviorVsGrade" class="plot-container"></div>
+                </div>
+
+                <!-- Marks Analysis -->
+                <div class="card">
+                    <h5>Marks Analysis</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6>Theory Subjects Analysis</h6>
+                            <p>Average Theory Marks: <span id="theoryMean">-</span></p>
+                            <p>Performance Level: <span id="theoryPerformance">-</span></p>
+                            <p>Subject-wise Breakdown:</p>
+                            <ul id="theoryBreakdown"></ul>
+                            <div class="mt-3">
+                                <h6>📊 Theory Subject Performance</h6>
+                                <p>Strongest Theory Subject: <span id="strongestTheory">-</span></p>
+                                <p>Weakest Theory Subject: <span id="weakestTheory">-</span></p>
+                                <p>Performance Insights: <span id="theoryInsights">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weakest Subjects -->
+                <div class="card weakest-subjects">
+                    <h6>⚠️ Subject Performance Analysis</h6>
+                    <div id="weakestSubjects"></div>
+                    <div class="mt-3">
+                        <h6>📊 Performance Insights</h6>
+                        <ul id="performanceInsights"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to create marks inputs based on semester
+        function createMarksInputs(semester) {
+            const marksContainer = document.getElementById('marksContainer');
+            marksContainer.innerHTML = '';
+            
+            const [numTheory, numPractical] = {
+                1: [3, 3], 2: [4, 4], 3: [6, 4], 4: [7, 3],
+                5: [7, 3], 6: [7, 3], 7: [6, 0], 8: [4, 0]
+            }[semester];
+
+            // Create theory subject inputs
+            for (let i = 1; i <= numTheory; i++) {
+                const subjectGroup = document.createElement('div');
+                subjectGroup.className = 'subject-group';
+                subjectGroup.innerHTML = `
+                    <div class="subject-title">Theory Subject ${i}</div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">CA Marks (Max 25)</label>
+                            <input type="number" class="form-control marks-input" min="0" max="25" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">CA Marks (Max 25)</label>
+                            <input type="number" class="form-control marks-input" min="0" max="25" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">CA Marks (Max 25)</label>
+                            <input type="number" class="form-control marks-input" min="0" max="25" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">CA Marks (Max 25)</label>
+                            <input type="number" class="form-control marks-input" min="0" max="25" required>
+                        </div>
+                    </div>
+                `;
+                marksContainer.appendChild(subjectGroup);
+            }
+
+            // Create practical subject inputs
+            for (let i = 1; i <= numPractical; i++) {
+                const subjectGroup = document.createElement('div');
+                subjectGroup.className = 'subject-group';
+                subjectGroup.innerHTML = `
+                    <div class="subject-title">Practical Subject ${i}</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">PCA Marks (Max 40)</label>
+                            <input type="number" class="form-control marks-input" min="0" max="40" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">PCA Marks (Max 40)</label>
+                            <input type="number" class="form-control marks-input" min="0" max="40" required>
+                        </div>
+                    </div>
+                `;
+                marksContainer.appendChild(subjectGroup);
+            }
+        }
+
+        // Handle semester change
+        document.getElementById('semester').addEventListener('change', function() {
+            createMarksInputs(this.value);
+        });
+
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const semester = parseInt(document.getElementById('semester').value);
+            const marks = Array.from(document.querySelectorAll('.marks-input')).map(input => parseFloat(input.value));
+            const behavior = parseInt(document.getElementById('behavior').value);
+            const attendance = parseInt(document.getElementById('attendance').value);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        semester: semester,
+                        marks: marks,
+                        behavior: behavior,
+                        attendance: attendance
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Display results
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('gradeDisplay').textContent = data.predicted_grade;
+                document.getElementById('dropoutRisk').textContent = data.predicted_dropout_risk + '%';
+
+                // Switch to dashboard tab and update with student's data
+                const dashboardTab = document.getElementById('dashboard-tab');
+                const dashboardTabInstance = new bootstrap.Tab(dashboardTab);
+                dashboardTabInstance.show();
+
+                // Update dashboard with student's data
+                updateStudentDashboard({
+                    semester: semester,
+                    grade: data.predicted_grade,
+                    dropout_risk: data.predicted_dropout_risk,
+                    attendance: attendance,
+                    behavior: behavior,
+                    marks: marks
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while making the prediction.');
+            }
+        });
+
+        // Function to update dashboard with student's data
+        function updateStudentDashboard(studentData) {
+            // Update summary metrics
+            $("#totalStudents").text("1");
+            $("#averageGrade").text(studentData.grade);
+            $("#dropoutRiskMetric").text(studentData.dropout_risk.toFixed(2) + "%");
+            $("#attendanceRate").text(studentData.attendance + "%");
+
+            // Create grade distribution plot (single student)
+            const gradeData = {
+                data: [{
+                    x: [studentData.grade],
+                    type: 'histogram',
+                    name: 'Student Grade'
+                }],
+                layout: {
+                    title: 'Student Grade',
+                    xaxis: { title: 'Grade' },
+                    yaxis: { title: 'Count' }
+                }
+            };
+            Plotly.newPlot('gradeDistribution', gradeData.data, gradeData.layout);
+
+            // Create dropout risk plot (single student)
+            const dropoutData = {
+                data: [{
+                    x: [studentData.dropout_risk],
+                    type: 'histogram',
+                    name: 'Dropout Risk'
+                }],
+                layout: {
+                    title: 'Student Dropout Risk',
+                    xaxis: { title: 'Dropout Risk (%)' },
+                    yaxis: { title: 'Count' }
+                }
+            };
+            Plotly.newPlot('dropoutRiskPlot', dropoutData.data, dropoutData.layout);
+
+            // Create attendance vs grade scatter plot (single student)
+            const attendanceData = {
+                data: [{
+                    x: [studentData.attendance],
+                    y: [studentData.grade],
+                    type: 'scatter',
+                    mode: 'markers',
+                    name: 'Student'
+                }],
+                layout: {
+                    title: 'Attendance vs Grade',
+                    xaxis: { title: 'Attendance (%)' },
+                    yaxis: { title: 'Grade' }
+                }
+            };
+            Plotly.newPlot('attendanceVsGrade', attendanceData.data, attendanceData.layout);
+
+            // Create behavior vs grade scatter plot (single student)
+            const behaviorData = {
+                data: [{
+                    x: [studentData.behavior],
+                    y: [studentData.grade],
+                    type: 'scatter',
+                    mode: 'markers',
+                    name: 'Student'
+                }],
+                layout: {
+                    title: 'Behavior vs Grade',
+                    xaxis: { title: 'Behavior Score' },
+                    yaxis: { title: 'Grade' }
+                }
+            };
+            Plotly.newPlot('behaviorVsGrade', behaviorData.data, behaviorData.layout);
+
+            // Define theory subjects per semester
+            const theorySubjectsPerSemester = {
+                1: 3,  // 3 theory subjects
+                2: 4,  // 4 theory subjects
+                3: 6,  // 6 theory subjects
+                4: 7,  // 7 theory subjects
+                5: 7,  // 7 theory subjects
+                6: 7,  // 7 theory subjects
+                7: 6,  // 6 theory subjects
+                8: 4   // 4 theory subjects
+            };
+
+            // Calculate and display marks analysis
+            const numTheorySubjects = theorySubjectsPerSemester[studentData.semester];
+            const theoryMarks = [];
+            const theorySubjectMarks = [];
+
+            // Calculate average marks for each theory subject
+            for (let i = 0; i < numTheorySubjects; i++) {
+                const subjectMarks = studentData.marks.slice(i * 4, (i + 1) * 4);
+                const subjectAverage = subjectMarks.reduce((a, b) => a + b, 0) / 4;
+                theoryMarks.push(...subjectMarks);
+                theorySubjectMarks.push({
+                    subjectNumber: i + 1,
+                    marks: subjectMarks,
+                    average: subjectAverage
+                });
+            }
+
+            // Calculate overall theory average
+            const theoryMean = theoryMarks.reduce((a, b) => a + b, 0) / theoryMarks.length;
+            $("#theoryMean").text(theoryMean.toFixed(2));
+            
+            // Determine theory performance level
+            let theoryPerformance = "";
+            if (theoryMean >= 20) theoryPerformance = "Excellent";
+            else if (theoryMean >= 15) theoryPerformance = "Good";
+            else if (theoryMean >= 10) theoryPerformance = "Average";
+            else theoryPerformance = "Needs Improvement";
+            $("#theoryPerformance").text(theoryPerformance);
+
+            // Generate theory subject breakdown
+            let theoryBreakdownHtml = "";
+            theorySubjectMarks.forEach(subject => {
+                const performance = subject.average >= 20 ? 'Good' :
+                                  subject.average >= 15 ? 'Average' : 'Needs Improvement';
+                theoryBreakdownHtml += `<li>Theory Subject ${subject.subjectNumber}: ${subject.average.toFixed(2)} (${performance})</li>`;
+            });
+            $("#theoryBreakdown").html(theoryBreakdownHtml);
+
+            // Find strongest and weakest theory subjects
+            const sortedSubjects = [...theorySubjectMarks].sort((a, b) => b.average - a.average);
+            const strongest = sortedSubjects[0];
+            const weakest = sortedSubjects[sortedSubjects.length - 1];
+            
+            $("#strongestTheory").html(`Theory Subject ${strongest.subjectNumber} (${strongest.average.toFixed(2)})`);
+            $("#weakestTheory").html(`Theory Subject ${weakest.subjectNumber} (${weakest.average.toFixed(2)})`);
+
+            // Generate theory insights
+            let theoryInsights = "";
+            if (theoryMean >= 20) {
+                theoryInsights = "Strong overall performance in theory subjects";
+            } else if (theoryMean >= 15) {
+                theoryInsights = "Good performance with room for improvement";
+            } else if (theoryMean >= 10) {
+                theoryInsights = "Average performance - focus on improvement";
+            } else {
+                theoryInsights = "Needs significant improvement in theory subjects";
+            }
+            $("#theoryInsights").text(theoryInsights);
+
+            // Generate performance insights
+            let insightsHtml = "";
+            
+            // Overall performance insight
+            insightsHtml += `<li>Overall Theory Performance: ${theoryMean.toFixed(2)} (${theoryPerformance})</li>`;
+            
+            // Subject-wise insights
+            insightsHtml += `<li>Strongest Theory Subject: Subject ${strongest.subjectNumber} (${strongest.average.toFixed(2)})</li>`;
+            insightsHtml += `<li>Weakest Theory Subject: Subject ${weakest.subjectNumber} (${weakest.average.toFixed(2)})</li>`;
+            
+            // Attendance impact
+            if (studentData.attendance >= 75) {
+                insightsHtml += `<li>Good attendance (${studentData.attendance}%) - This positively impacts your performance</li>`;
+            } else {
+                insightsHtml += `<li>Attendance needs improvement (${studentData.attendance}%) - Consider attending more classes</li>`;
+            }
+            
+            // Behavior impact
+            if (studentData.behavior >= 8) {
+                insightsHtml += `<li>Excellent behavior score (${studentData.behavior}/10) - This contributes to better learning outcomes</li>`;
+            } else if (studentData.behavior >= 6) {
+                insightsHtml += `<li>Good behavior score (${studentData.behavior}/10) - Maintain this level</li>`;
+            } else {
+                insightsHtml += `<li>Behavior score needs improvement (${studentData.behavior}/10) - Consider being more engaged in class</li>`;
+            }
+            
+            $("#performanceInsights").html(insightsHtml);
+
+            // Display weakest subjects with more context
+            const weakestSubjectsHtml = theorySubjectMarks
+                .sort((a, b) => a.average - b.average)
+                .slice(0, 3)
+                .map(subject => {
+                    const performance = subject.average >= 20 ? 'Good' :
+                                      subject.average >= 15 ? 'Average' : 'Needs Improvement';
+                    return `<li>Theory Subject ${subject.subjectNumber}: ${subject.average.toFixed(2)} (${performance})</li>`;
+                })
+                .join('');
+            
+            $("#weakestSubjects").html(weakestSubjectsHtml);
+        }
+
+        // Dashboard functionality
+        function updateDashboard(semester) {
+            // Update semester summary
+            $.get(`/dashboard/semester/${semester}/summary`, function(data) {
+                $("#totalStudents").text(data.total_students);
+                $("#averageGrade").text(data.average_grade.toFixed(2));
+                $("#dropoutRiskMetric").text(data.dropout_risk.toFixed(2) + "%");
+                $("#attendanceRate").text(data.attendance_rate.toFixed(2) + "%");
+            });
+
+            // Update grade distribution
+            $.get(`/dashboard/semester/${semester}/grade-distribution`, function(data) {
+                Plotly.newPlot('gradeDistribution', data.data, data.layout);
+            });
+
+            // Update dropout risk
+            $.get(`/dashboard/semester/${semester}/dropout-risk`, function(data) {
+                Plotly.newPlot('dropoutRiskPlot', data.data, data.layout);
+            });
+
+            // Update attendance vs grade
+            $.get(`/dashboard/semester/${semester}/attendance-vs-grade`, function(data) {
+                Plotly.newPlot('attendanceVsGrade', data.data, data.layout);
+            });
+
+            // Update behavior vs grade
+            $.get(`/dashboard/semester/${semester}/behavior-vs-grade`, function(data) {
+                Plotly.newPlot('behaviorVsGrade', data.data, data.layout);
+            });
+
+            // Update marks analysis
+            $.get(`/dashboard/semester/${semester}/marks-analysis`, function(data) {
+                $("#caMean").text(data.ca_stats.mean.toFixed(2));
+                $("#caStd").text(data.ca_stats.std.toFixed(2));
+                $("#pcaMean").text(data.pca_stats.mean.toFixed(2));
+                $("#pcaStd").text(data.pca_stats.std.toFixed(2));
+            });
+
+            // Update weakest subjects
+            $.get(`/dashboard/semester/${semester}/weakest-subjects`, function(data) {
+                let weakestSubjectsHtml = "";
+                for (const [subject, marks] of Object.entries(data)) {
+                    weakestSubjectsHtml += `<li>${subject}: ${marks.toFixed(2)}</li>`;
+                }
+                $("#weakestSubjects").html(weakestSubjectsHtml);
+            });
+        }
+
+        // Initialize dashboard with first semester
+        $(document).ready(function() {
+            // Initialize dashboard when the dashboard tab is shown
+            $('#dashboard-tab').on('shown.bs.tab', function (e) {
+                updateDashboard(1);
+            });
+            
+            // Update when semester is changed
+            $("#dashboardSemester").change(function() {
+                updateDashboard($(this).val());
+            });
+        });
+    </script>
+</body>
+</html> 
