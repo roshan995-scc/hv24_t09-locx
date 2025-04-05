@@ -1,97 +1,75 @@
 # 🎓 Path AI
 
-> 🚧 Developed by **Team Locx** | Built during **SIT Hack-A-Verse Hackathon**  
-> 🔄 *This project is still under development. Final features and design are yet to be finalized.*
+> 🚀 Developed by **Team Locx**  
+> 🏆 Created during **SIT Hack-A-Verse 2025**  
+> ⚠️ *This project is still under development. Final features and UI are yet to be completed.*
 
 ---
 
-## 📌 Overview
+## 📌 About the Project
 
-**Path AI** is an AI-powered web-based tool designed to predict **student academic performance** and **behavioral trends** by analyzing:
-- 📊 **Continuous Assessment (CA)** marks  
-- 📈 **Pre-Continuous Assessment (PCA)** marks  
-- 📅 **Attendance records**
+**Path AI** is an AI-powered web tool designed to predict student **academic performance** and monitor **behavioral patterns** by analyzing:
 
-In addition, Path AI offers dual chatbot support:
-- 🧠 A **Mental Health Chatbot** integrated with an **emotion detector trained using the FER (Facial Expression Recognition) library**
-- 📚 A **General Academic Chatbot** to help students with doubts and queries
+- 📊 Continuous Assessment (CA) marks  
+- 📈 Pre-Continuous Assessment (PCA) marks  
+- 📅 Attendance records
 
----
+Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
-## 🌟 Key Features
+- 🤖 **Academic Chatbot** – Assists students with academic doubts and general queries  
+- 🧠 **Mental Health Chatbot** – Supports emotional well-being using **emotion detection** powered by the **FER (Facial Expression Recognition)** library
 
-### 🎯 Academic Performance & Behavior Prediction
-- Predicts academic performance using historical CA, PCA, and attendance data.
-- Detects behavioral patterns and potential academic risks.
-- Supports proactive faculty intervention and student mentoring.
-
-### 🤖 Dual Chatbot System
-
-#### 1. 📚 Academic Support Chatbot
-- Assists students with common academic queries (schedules, subjects, deadlines).
-- Eases faculty workload by automating routine interactions.
-
-#### 2. 🧠 Mental Health Chatbot (with Emotion Detection)
-- Trained using the **FER (Facial Expression Recognition)** library to detect emotional states.
-- Identifies signs of stress, anxiety, or frustration based on text and image input.
-- Provides helpful, non-judgmental responses and wellness suggestions.
+> 💡 *Our vision is to empower students and educators with proactive tools that combine academic intelligence with emotional care.*
 
 ---
 
-## 🛠️ Tech Stack
+## ✅ Functionalities
 
-| Area                    | Tools & Libraries Used                                 |
-|-------------------------|--------------------------------------------------------|
-| Machine Learning        | Python, Scikit-learn, TensorFlow                       |
-| NLP & Chatbots          | NLTK, spaCy, Transformers                              |
-| Emotion Detection       | **FER (Facial Expression Recognition)** Library        |
-| Backend & APIs          | Flask / FastAPI *(TBD)*                                |
-| Frontend                | HTML, CSS, JavaScript *(UI in progress)*               |
-| Data Handling           | Pandas, NumPy                                          |
-| Planned UI Components   | React or Vue                                           |
+- 🎯 Predict student performance using CA, PCA, and attendance data
+- 🧠 Detect behavioral patterns and academic risks
+- 🗣️ Academic chatbot to assist with general student queries
+- 😌 Mental health chatbot to understand and respond to emotions
+- 📬 Alerts for students needing academic or emotional support
 
 ---
 
-## 🚧 Project Status: **Under Development**
+## 🧰 Technologies Used
 
-- ✅ Core prediction model in place
-- ✅ Emotion detection system integrated (FER-based)
-- ✅ Chatbots working in test environments
-- 🛠️ Frontend UI under construction
-- 🔄 Frequent updates and feature testing ongoing
-
-We are currently focusing on:
-- Enhancing prediction accuracy and emotion sensitivity
-- Finalizing chatbot conversation flows
-- Building responsive and intuitive UI
-- Securing and scaling backend services
+| Category            | Tools & Frameworks                               |
+|---------------------|--------------------------------------------------|
+| 🧠 Machine Learning  | Python, Scikit-learn, TensorFlow                 |
+| 🗨️ NLP & Chatbots    | Dialogflow, NLTK, spaCy                          |
+| 🎭 Emotion Detection | FER (Facial Expression Recognition Library)     |
+| 🌐 Frontend         | HTML, CSS, JavaScript                            |
+| 🔧 Backend          | Node.js, Express.js                              |
+| 🗄️ Database         | MongoDB                                          |
 
 ---
 
-## 🔮 Upcoming Features
+## ✨ Features
 
-- 📊 Real-time dashboards for students and faculty
-- 🔔 Early warning alerts for academic risk
-- 🗣️ Multilingual chatbot support
-- 🔐 Secure authentication and role-based access
-- 🎓 LMS integration for seamless data flow
-
----
-
-## 🤝 Feedback & Contribution
-
-We’d love your feedback and ideas!  
-Whether you're a developer, student, educator, or designer:
-
-- 🐞 Report bugs via GitHub Issues  
-- 🌱 Suggest features or improvements  
-- 🔧 Fork the repo and submit a Pull Request  
+- 📊 Performance prediction with interpretable metrics
+- 🤝 Dual chatbot integration (academic + emotional support)
+- 🎭 FER-powered emotion analysis for mental health insights
+- 📈 Scalable structure for data analysis and UI integration *(in progress)*
+- ⚙️ Modular backend with support for further AI/ML models
 
 ---
 
-## 👥 Team Locx
-  
+## 🔮 Future Scope
+
+- 📉 Real-time performance dashboards for faculty and students
+- 🧾 Integration with institutional LMS platforms
+- 🔐 Authentication with role-based access (student, teacher, admin)
+- 🌐 Multilingual chatbot support
+- 📱 Fully mobile-responsive frontend
+
+---
+
+## 👥 About Team Locx
+
+Team Locx is a passionate group of innovators dedicated to building solutions that **combine academic performance tracking with mental health awareness** through the power of AI.
+
 > Driven by the vision to combine academic insights with mental wellness support using AI.
 
 ---
-
