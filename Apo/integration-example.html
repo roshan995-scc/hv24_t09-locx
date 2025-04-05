@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website with Mental Health Chatbot</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Chatbot Popup CSS -->
+    <link rel="stylesheet" href="static/css/chatbot-popup.css">
+</head>
+<body>
+    <!-- Your website content goes here -->
+    <h1>Welcome to My Website</h1>
+    <p>This is an example of how to integrate the Mental Health Chatbot into your website.</p>
+
+    <!-- Chatbot Scripts -->
+    <script src="static/js/chatbot-popup.js"></script>
+    <script>
+        // Initialize the chatbot popup
+        document.addEventListener('DOMContentLoaded', function() {
+            // Replace 'http://localhost:5000/chatbot' with your actual chatbot URL
+            const chatbot = new MentalHealthChatbotPopup({
+                apiUrl: 'http://localhost:5000/chatbot',
+                buttonId: 'open-chatbot-btn'
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Support Bot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="header-content">
+                    <i class="fas fa-brain"></i>
+                    <h1>Mental Health Support</h1>
+                </div>
+                <div class="emotion-display">
+                    <span class="emotion-label">Current Emotion:</span>
+                    <span id="detected-emotion">Neutral</span>
+                </div>
+            </div>
+
+            <div class="video-container">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div class="emotion-overlay" id="emotion-overlay"></div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <p>Welcome! I'm here to support you. You can:</p>
+                        <ul>
+                            <li>Chat with me about anything</li>
+                            <li>Click the Affirmation button for a positive message</li>
+                            <li>Click the Meditation button for a relaxation guide</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" placeholder="Type your message here...">
+                    <button id="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-button" onclick="sendQuickMessage('affirmation')">
+                        <i class="fas fa-star"></i> Affirmation
+                    </button>
+                    <button class="action-button" onclick="sendQuickMessage('meditation')">
+                        <i class="fas fa-peace"></i> Meditation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
