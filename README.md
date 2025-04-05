@@ -90,8 +90,7 @@ Whether you're a developer, student, educator, or designer:
 ---
 
 ## 👥 Team Locx
-
-> Crafted with 💙 by a passionate team at **SIT Hack-A-Verse 2025**  
+  
 > Driven by the vision to combine academic insights with mental wellness support using AI.
 
 ---
