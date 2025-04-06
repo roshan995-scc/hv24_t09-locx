@@ -70,6 +70,6 @@ Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
 ## 👥 About Team Locx
 
-Team Locx is a passionate group of innovators building tech that bridges the gap between **academic success** and **mental wellness** using AI.
+Team Locx is a group of passionate innovators focused on integrating **Artificial Intelligence** with **academic systems** to enhance student performance and well-being. 
 
 ---
