@@ -15,11 +15,15 @@
 - 📅 Attendance records  
 - 🧍‍♂️ **Overall student behavior**
 
-Our system leverages **Deep Learning** techniques to improve prediction accuracy and provide early academic insights.
+It features **two prediction systems**:
+- 🧮 One based on **predefined mathematical logic built in JavaScript**
+- 🧠 Another powered by **Deep Learning models** for more dynamic, data-driven predictions
 
-Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
+Together, they offer both **rule-based** and **intelligent** analysis of academic trends and student outcomes.
 
-- 🤖 **General-purpose Chatbot** – Built using **Skit** and **Gemini API**, this bot helps students resolve doubts and answer common academic queries  
+Path AI also integrates **dual chatbot systems**:
+
+- 🎓 **Academic Chatbot** – Built using **Skit** and **Gemini API**, this bot helps students resolve academic doubts, provide subject-related guidance, and streamline access to information  
 - 🧠 **Mental Health Chatbot** – Supports emotional well-being using **emotion detection**, powered by the **FER (Facial Expression Recognition)** library
 
 > 💡 *Our vision is to empower students and educators with proactive tools that combine academic intelligence with emotional care.*
@@ -29,9 +33,9 @@ Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 ## ✅ Functionalities
 
 - 🎯 Predict student performance using CA, PCA, attendance, and behavior data  
-- 📈 Utilizes **Deep Learning models** for smarter predictions  
+- 🔁 Dual prediction engine – **JavaScript logic** & **Deep Learning model**  
 - 🧠 Analyze behavioral patterns to detect academic risks  
-- 🗣️ General-purpose chatbot (powered by Skit & Gemini API) to help students clear doubts  
+- 🎓 Academic chatbot (powered by Skit & Gemini API) to help students clear doubts  
 - 😌 Mental health chatbot to understand and respond to emotions  
 
 ---
@@ -50,7 +54,9 @@ Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
 ## ✨ Features
 
-- 📊 Academic performance prediction using deep learning  
+- 📊 Dual-mode academic performance prediction  
+  - Predefined logic using JavaScript  
+  - Deep Learning-based smart predictor  
 - 🤝 Dual chatbot system for academic help and emotional wellness  
 - 🎭 FER-powered emotion analysis to identify stress or anxiety  
 - 🧍 Behavior tracking for deeper insights  
@@ -70,6 +76,4 @@ Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
 ## 👥 About Team Locx
 
-Team Locx is a group of passionate innovators focused on integrating **Artificial Intelligence** with **academic systems** to enhance student performance and well-being. 
-
----
+Team Locx is a group of passionate innovators focused on integrating **Artificial Intelligence** with **academic systems** to enhance student performance and well-being.  
