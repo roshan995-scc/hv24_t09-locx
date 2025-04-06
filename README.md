@@ -12,12 +12,15 @@
 
 - 📊 Continuous Assessment (CA) marks  
 - 📈 Pre-Continuous Assessment (PCA) marks  
-- 📅 Attendance records
+- 📅 Attendance records  
+- 🧍‍♂️ **Overall student behavior**
+
+Our system leverages **Deep Learning** techniques to improve prediction accuracy and provide early academic insights.
 
 Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
-- 🤖 **Academic Chatbot** – Assists students with academic doubts and general queries  
-- 🧠 **Mental Health Chatbot** – Supports emotional well-being using **emotion detection** powered by the **FER (Facial Expression Recognition)** library
+- 🤖 **General-purpose Chatbot** – Built using **Skit** and **Gemini API**, this bot helps students resolve doubts and answer common academic queries  
+- 🧠 **Mental Health Chatbot** – Supports emotional well-being using **emotion detection**, powered by the **FER (Facial Expression Recognition)** library
 
 > 💡 *Our vision is to empower students and educators with proactive tools that combine academic intelligence with emotional care.*
 
@@ -25,11 +28,11 @@ Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
 ## ✅ Functionalities
 
-- 🎯 Predict student performance using CA, PCA, and attendance data
-- 🧠 Detect behavioral patterns and academic risks
-- 🗣️ Academic chatbot to assist with general student queries
-- 😌 Mental health chatbot to understand and respond to emotions
-- 📬 Alerts for students needing academic or emotional support
+- 🎯 Predict student performance using CA, PCA, attendance, and behavior data  
+- 📈 Utilizes **Deep Learning models** for smarter predictions  
+- 🧠 Analyze behavioral patterns to detect academic risks  
+- 🗣️ General-purpose chatbot (powered by Skit & Gemini API) to help students clear doubts  
+- 😌 Mental health chatbot to understand and respond to emotions  
 
 ---
 
@@ -37,39 +40,36 @@ Alongside prediction capabilities, Path AI integrates **dual chatbot systems**:
 
 | Category            | Tools & Frameworks                               |
 |---------------------|--------------------------------------------------|
-| 🧠 Machine Learning  | Python, Scikit-learn, TensorFlow                 |
-| 🗨️ NLP & Chatbots    | Dialogflow, NLTK, spaCy                          |
+| 🧠 Deep Learning     | Python, TensorFlow, Scikit-learn (for utilities) |
+| 🗨️ Chatbots & NLP    | **Skit**, **Gemini API**, NLTK                  |
 | 🎭 Emotion Detection | FER (Facial Expression Recognition Library)     |
 | 🌐 Frontend         | HTML, CSS, JavaScript                            |
-| 🔧 Backend          | Node.js, Express.js                              |
-| 🗄️ Database         | MongoDB                                          |
+| 🔧 Backend          | Python, **Node.js**                              |
 
 ---
 
 ## ✨ Features
 
-- 📊 Performance prediction with interpretable metrics
-- 🤝 Dual chatbot integration (academic + emotional support)
-- 🎭 FER-powered emotion analysis for mental health insights
-- 📈 Scalable structure for data analysis and UI integration *(in progress)*
-- ⚙️ Modular backend with support for further AI/ML models
+- 📊 Academic performance prediction using deep learning  
+- 🤝 Dual chatbot system for academic help and emotional wellness  
+- 🎭 FER-powered emotion analysis to identify stress or anxiety  
+- 🧍 Behavior tracking for deeper insights  
+- 🛠️ Modular backend ready for expansion *(in progress)*  
 
 ---
 
 ## 🔮 Future Scope
 
-- 📉 Real-time performance dashboards for faculty and students
-- 🧾 Integration with institutional LMS platforms
-- 🔐 Authentication with role-based access (student, teacher, admin)
-- 🌐 Multilingual chatbot support
-- 📱 Fully mobile-responsive frontend
+- 📉 Real-time dashboards for students and faculty  
+- 🧾 LMS integration (Moodle, Google Classroom, etc.)  
+- 🔐 Secure login with role-based access (student, teacher, admin)  
+- 🌐 Support for multilingual chatbot conversations  
+- 📱 Responsive mobile-first UI
 
 ---
 
 ## 👥 About Team Locx
 
-Team Locx is a passionate group of innovators dedicated to building solutions that **combine academic performance tracking with mental health awareness** through the power of AI.
-
-> Driven by the vision to combine academic insights with mental wellness support using AI.
+Team Locx is a passionate group of innovators building tech that bridges the gap between **academic success** and **mental wellness** using AI.
 
 ---
